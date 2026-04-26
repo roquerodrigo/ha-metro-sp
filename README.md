@@ -1,46 +1,63 @@
-# Notice
+# Metrô SP para Home Assistant
 
-The component and platforms in this repository are not meant to be used by a
-user, but as a "blueprint" that custom component developers can build
-upon, to make more awesome stuff.
+Integração custom para o [Home Assistant](https://www.home-assistant.io/) que exibe o status operacional em tempo real
+das linhas do Metrô SP e CPTM.
 
-HAVE FUN! 😎
+## Linhas suportadas
 
-## Why?
+| Linha | Nome      | Operador      |
+|-------|-----------|---------------|
+| 1     | Azul      | Metrô SP      |
+| 2     | Verde     | Metrô SP      |
+| 3     | Vermelha  | Metrô SP      |
+| 4     | Amarela   | ViaQuatro     |
+| 5     | Lilás     | ViaMobilidade |
+| 7     | Rubi      | CPTM          |
+| 8     | Diamante  | ViaMobilidade |
+| 9     | Esmeralda | ViaMobilidade |
+| 10    | Turquesa  | CPTM          |
+| 11    | Coral     | CPTM          |
+| 12    | Safira    | CPTM          |
+| 13    | Jade      | CPTM          |
+| 15    | Prata     | Metrô SP      |
+| 17    | Ouro      | ViaMobilidade |
 
-This is simple, by having custom_components look (README + structure) the same
-it is easier for developers to help each other and for users to start using them.
+## Sensores criados
 
-If you are a developer and you want to add things to this "blueprint" that you think more
-developers will have use for, please open a PR to add it :)
+Cada linha gera um **device** independente com dois sensores:
 
-## What?
+| Sensor               | Entity ID                              | Descrição                                     |
+|----------------------|----------------------------------------|-----------------------------------------------|
+| Operação             | `sensor.metro_sp_linha_X_cor_operacao` | Status atual da linha (ex: "Operação Normal") |
+| Detalhes da Operação | `sensor.metro_sp_linha_X_cor_detalhes` | Descrição detalhada de ocorrências            |
 
-This repository contains multiple files, here is a overview:
+### Atributos do sensor de Operação
 
-File | Purpose | Documentation
--- | -- | --
-`.devcontainer.json` | Used for development/testing with Visual Studio Code. | [Documentation](https://code.visualstudio.com/docs/remote/containers)
-`.github/ISSUE_TEMPLATE/*.yml` | Templates for the issue tracker | [Documentation](https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository)
-`custom_components/integration_blueprint/*` | Integration files, this is where everything happens. | [Documentation](https://developers.home-assistant.io/docs/creating_component_index)
-`CONTRIBUTING.md` | Guidelines on how to contribute. | [Documentation](https://help.github.com/en/github/building-a-strong-community/setting-guidelines-for-repository-contributors)
-`LICENSE` | The license file for the project. | [Documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/licensing-a-repository)
-`README.md` | The file you are reading now, should contain info about the integration, installation and configuration instructions. | [Documentation](https://help.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax)
-`requirements.txt` | Python packages used for development/lint/testing this integration. | [Documentation](https://pip.pypa.io/en/stable/user_guide/#requirements-files)
+| Atributo       | Descrição                                   |
+|----------------|---------------------------------------------|
+| `status_code`  | Código do status (ex: `OperacaoNormal`)     |
+| `status_color` | Cor do status (`verde`, `amarelo`, `cinza`) |
+| `color_name`   | Nome da cor da linha                        |
+| `color_hex`    | Código hexadecimal da cor da linha          |
+| `line_code`    | Número da linha                             |
 
-## How?
+## Instalação
 
-1. Create a new repository in GitHub, using this repository as a template by clicking the "Use this template" button in the GitHub UI.
-1. Open your new repository in Visual Studio Code devcontainer (Preferably with the "`Dev Containers: Clone Repository in Named Container Volume...`" option).
-1. Rename all instances of the `integration_blueprint` to `custom_components/<your_integration_domain>` (e.g. `custom_components/awesome_integration`).
-1. Rename all instances of the `Integration Blueprint` to `<Your Integration Name>` (e.g. `Awesome Integration`).
-1. Run the `scripts/develop` to start HA and test out your new integration.
+### Manual
 
-## Next steps
+1. Copie a pasta `custom_components/metro_sp` para o diretório `custom_components` da sua instalação do Home Assistant.
+2. Reinicie o Home Assistant.
+3. Acesse **Configurações → Dispositivos e Serviços → Adicionar Integração** e pesquise por **Metrô SP**.
+4. Confirme a instalação. Os sensores serão criados automaticamente.
 
-These are some next steps you may want to look into:
-- Add tests to your integration, [`pytest-homeassistant-custom-component`](https://github.com/MatthewFlamm/pytest-homeassistant-custom-component) can help you get started.
-- Add brand images (logo/icon).
-- Create your first release.
-- Share your integration on the [Home Assistant Forum](https://community.home-assistant.io/).
-- Submit your integration to [HACS](https://hacs.xyz/docs/publish/start).
+### HACS
+
+Em breve.
+
+## Atualização dos dados
+
+Os dados são atualizados a cada **5 minutos** via polling na API pública do Metrô SP. Nenhuma credencial é necessária.
+
+## Licença
+
+[MIT](LICENSE)

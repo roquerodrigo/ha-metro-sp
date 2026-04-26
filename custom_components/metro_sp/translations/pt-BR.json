@@ -1,0 +1,27 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configurar Metrô SP",
+                "description": "Busca o status em tempo real das linhas do Metrô SP e CPTM. Nenhuma credencial necessária."
+            }
+        },
+        "error": {
+            "connection": "Não foi possível conectar à API do Metrô SP.",
+            "unknown": "Ocorreu um erro desconhecido."
+        },
+        "abort": {
+            "already_configured": "O Metrô SP já está configurado."
+        }
+    },
+    "entity": {
+        "sensor": {
+            "operacao": {
+                "name": "Operação"
+            },
+            "detalhes": {
+                "name": "Detalhes da Operação"
+            }
+        }
+    }
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   width="256" height="256">
+  <title>Cia. do Metropolitano de S. Paulo (Metrô)</title>
+  <metadata>
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <dc:title>Cia. do Metropolitano de S. Paulo (Metrô)</dc:title>
+        <cc:license rdf:resource="http://creativecommons.org/licenses/by-sa/3.0/"/>
+      </cc:Work>
+      <cc:License rdf:about="http://creativecommons.org/licenses/by-sa/3.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g transform="matrix(4.6395821,0,0,4.6395821,-9.9624819e-6,-0.00544998)">
+    <g>
+      <path
+         style="fill:#1c5ca2;fill-opacity:1;fill-rule:evenodd;stroke:none"
+         d="m 2.14728e-6,0.00117467 55.17738385272,0 0,55.17738333 -55.17738385272,0 0,-55.17738333 z"/>
+      <path
+         style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none"
+         d="M 27.587739,4.3703667 8.6725678,23.285539 24.395299,40.130537 l 0,-25.084821 L 8.6725678,31.890714 27.587739,50.809366 46.50482,31.890714 30.78326,15.045716 l 0,25.084821 L 46.50482,23.285539 27.587739,4.3703667 z"/>
+    </g>
+  </g>
+</svg>
