@@ -1,191 +1,88 @@
-"""Tests for integration __init__.py setup/unload/reload."""
+"""Tests for integration setup, unload and reload."""
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
+from homeassistant.config_entries import ConfigEntryState
 
-
-def _make_hass_and_entry(api_lines=None):
-    hass = MagicMock()
-    hass.config_entries.async_forward_entry_setups = AsyncMock(return_value=True)
-    hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
-    hass.config_entries.async_reload = AsyncMock()
-
-    entry = MagicMock()
-    entry.domain = "metro_sp"
-    entry.entry_id = "test_entry_id"
-    entry.async_on_unload = MagicMock()
-    entry.add_update_listener = MagicMock(return_value=MagicMock())
-
-    return hass, entry
+from custom_components.metro_sp.const import DOMAIN
 
 
 # ---------------------------------------------------------------------------
 # async_setup_entry
 # ---------------------------------------------------------------------------
 
-
-async def test_async_setup_entry_returns_true(sample_lines):
-    from custom_components.metro_sp import async_setup_entry
-
-    hass, entry = _make_hass_and_entry()
-
-    with (
-        patch(
-            "custom_components.metro_sp.async_get_clientsession",
-            return_value=MagicMock(),
-        ),
-        patch(
-            "custom_components.metro_sp.async_get_loaded_integration",
-            new_callable=lambda: lambda *a, **k: MagicMock(),
-        ),
-        patch(
-            "custom_components.metro_sp.MetroSPApiClient"
-        ) as MockApiClient,
-        patch(
-            "custom_components.metro_sp.MetroSPDataUpdateCoordinator"
-        ) as MockCoord,
-    ):
-        coord_instance = MagicMock()
-        coord_instance.async_config_entry_first_refresh = AsyncMock()
-        MockCoord.return_value = coord_instance
-
-        result = await async_setup_entry(hass, entry)
-
-    assert result is True
+async def test_setup_entry_loads_successfully(hass, setup_integration):
+    entry = setup_integration
+    assert entry.state == ConfigEntryState.LOADED
 
 
-async def test_async_setup_entry_creates_coordinator(sample_lines):
-    from custom_components.metro_sp import async_setup_entry
-
-    hass, entry = _make_hass_and_entry()
-
-    with (
-        patch("custom_components.metro_sp.async_get_clientsession", return_value=MagicMock()),
-        patch("custom_components.metro_sp.async_get_loaded_integration", return_value=MagicMock()),
-        patch("custom_components.metro_sp.MetroSPApiClient"),
-        patch("custom_components.metro_sp.MetroSPDataUpdateCoordinator") as MockCoord,
-    ):
-        coord_instance = MagicMock()
-        coord_instance.async_config_entry_first_refresh = AsyncMock()
-        MockCoord.return_value = coord_instance
-
-        await async_setup_entry(hass, entry)
-
-    MockCoord.assert_called_once_with(hass=hass)
+async def test_setup_entry_creates_sensor_entities(hass, setup_integration):
+    states = hass.states.async_all("sensor")
+    # 2 sample lines × 2 sensors each = 4
+    assert len(states) == 4
 
 
-async def test_async_setup_entry_calls_first_refresh():
-    from custom_components.metro_sp import async_setup_entry
-
-    hass, entry = _make_hass_and_entry()
-
-    with (
-        patch("custom_components.metro_sp.async_get_clientsession", return_value=MagicMock()),
-        patch("custom_components.metro_sp.async_get_loaded_integration", return_value=MagicMock()),
-        patch("custom_components.metro_sp.MetroSPApiClient"),
-        patch("custom_components.metro_sp.MetroSPDataUpdateCoordinator") as MockCoord,
-    ):
-        coord_instance = MagicMock()
-        coord_instance.async_config_entry_first_refresh = AsyncMock()
-        MockCoord.return_value = coord_instance
-
-        await async_setup_entry(hass, entry)
-
-    coord_instance.async_config_entry_first_refresh.assert_awaited_once()
+async def test_setup_entry_sensor_entity_ids(hass, setup_integration):
+    entity_ids = {s.entity_id for s in hass.states.async_all("sensor")}
+    assert "sensor.metro_sp_linha_1_azul_operacao" in entity_ids
+    assert "sensor.metro_sp_linha_1_azul_detalhes" in entity_ids
+    assert "sensor.metro_sp_linha_3_vermelha_operacao" in entity_ids
+    assert "sensor.metro_sp_linha_3_vermelha_detalhes" in entity_ids
 
 
-async def test_async_setup_entry_forwards_sensor_platform():
-    from custom_components.metro_sp import async_setup_entry, PLATFORMS
-
-    hass, entry = _make_hass_and_entry()
-
-    with (
-        patch("custom_components.metro_sp.async_get_clientsession", return_value=MagicMock()),
-        patch("custom_components.metro_sp.async_get_loaded_integration", return_value=MagicMock()),
-        patch("custom_components.metro_sp.MetroSPApiClient"),
-        patch("custom_components.metro_sp.MetroSPDataUpdateCoordinator") as MockCoord,
-    ):
-        coord_instance = MagicMock()
-        coord_instance.async_config_entry_first_refresh = AsyncMock()
-        MockCoord.return_value = coord_instance
-
-        await async_setup_entry(hass, entry)
-
-    hass.config_entries.async_forward_entry_setups.assert_awaited_once_with(entry, PLATFORMS)
+async def test_setup_entry_operacao_state(hass, setup_integration):
+    state = hass.states.get("sensor.metro_sp_linha_1_azul_operacao")
+    assert state is not None
+    assert state.state == "Operação Normal"
 
 
-async def test_async_setup_entry_registers_update_listener():
-    from custom_components.metro_sp import async_setup_entry
+async def test_setup_entry_detalhes_state(hass, setup_integration):
+    state = hass.states.get("sensor.metro_sp_linha_1_azul_detalhes")
+    assert state is not None
+    assert state.state == "Linha operando normalmente."
 
-    hass, entry = _make_hass_and_entry()
 
-    with (
-        patch("custom_components.metro_sp.async_get_clientsession", return_value=MagicMock()),
-        patch("custom_components.metro_sp.async_get_loaded_integration", return_value=MagicMock()),
-        patch("custom_components.metro_sp.MetroSPApiClient"),
-        patch("custom_components.metro_sp.MetroSPDataUpdateCoordinator") as MockCoord,
-    ):
-        coord_instance = MagicMock()
-        coord_instance.async_config_entry_first_refresh = AsyncMock()
-        MockCoord.return_value = coord_instance
-
-        await async_setup_entry(hass, entry)
-
-    entry.add_update_listener.assert_called_once()
-    entry.async_on_unload.assert_called_once()
+async def test_setup_entry_registers_update_listener(hass, setup_integration):
+    entry = setup_integration
+    assert len(entry.update_listeners) == 1
 
 
 # ---------------------------------------------------------------------------
 # async_unload_entry
 # ---------------------------------------------------------------------------
 
-
-async def test_async_unload_entry_returns_true():
-    from custom_components.metro_sp import async_unload_entry, PLATFORMS
-
-    hass, entry = _make_hass_and_entry()
-    result = await async_unload_entry(hass, entry)
-
-    assert result is True
-    hass.config_entries.async_unload_platforms.assert_awaited_once_with(entry, PLATFORMS)
+async def test_unload_entry_succeeds(hass, setup_integration):
+    entry = setup_integration
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    assert entry.state == ConfigEntryState.NOT_LOADED
 
 
-async def test_async_unload_entry_returns_false_when_platform_fails():
-    from custom_components.metro_sp import async_unload_entry
-
-    hass, entry = _make_hass_and_entry()
-    hass.config_entries.async_unload_platforms = AsyncMock(return_value=False)
-
-    result = await async_unload_entry(hass, entry)
-    assert result is False
+async def test_unload_entry_makes_entities_unavailable(hass, setup_integration):
+    entry = setup_integration
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    for state in hass.states.async_all("sensor"):
+        assert state.state == "unavailable"
 
 
 # ---------------------------------------------------------------------------
 # async_reload_entry
 # ---------------------------------------------------------------------------
 
+async def test_reload_entry_restores_loaded_state(hass, setup_integration, mock_api_client):
+    entry = setup_integration
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state == ConfigEntryState.LOADED
 
-async def test_async_reload_entry_calls_reload():
+
+async def test_async_reload_entry_calls_reload(hass, setup_integration, mock_api_client):
     from custom_components.metro_sp import async_reload_entry
 
-    hass, entry = _make_hass_and_entry()
-    entry.entry_id = "my_entry_id"
-
+    entry = setup_integration
     await async_reload_entry(hass, entry)
-
-    hass.config_entries.async_reload.assert_awaited_once_with("my_entry_id")
-
-
-# ---------------------------------------------------------------------------
-# PLATFORMS constant
-# ---------------------------------------------------------------------------
-
-
-def test_platforms_contains_sensor():
-    from custom_components.metro_sp import PLATFORMS
-
-    platform_values = [str(p) for p in PLATFORMS]
-    assert any("sensor" in v.lower() for v in platform_values)
+    await hass.async_block_till_done()
+    assert entry.state == ConfigEntryState.LOADED
