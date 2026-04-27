@@ -73,25 +73,33 @@ async def test_async_get_lines_calls_request_once(sample_lines):
 async def test_api_wrapper_timeout_raises_communication_error():
     session, _ = _make_session(side_effect=TimeoutError("timed out"))
     with pytest.raises(MetroSPApiClientCommunicationError, match="Timeout"):
-        await MetroSPApiClient(session=session)._api_wrapper(method="get", url="http://x")
+        await MetroSPApiClient(session=session)._api_wrapper(
+            method="get", url="http://x"
+        )
 
 
 async def test_api_wrapper_client_error_raises_communication_error():
     session, _ = _make_session(side_effect=aiohttp.ClientError("refused"))
     with pytest.raises(MetroSPApiClientCommunicationError, match="Error fetching"):
-        await MetroSPApiClient(session=session)._api_wrapper(method="get", url="http://x")
+        await MetroSPApiClient(session=session)._api_wrapper(
+            method="get", url="http://x"
+        )
 
 
 async def test_api_wrapper_socket_error_raises_communication_error():
     session, _ = _make_session(side_effect=socket.gaierror("dns"))
     with pytest.raises(MetroSPApiClientCommunicationError, match="Error fetching"):
-        await MetroSPApiClient(session=session)._api_wrapper(method="get", url="http://x")
+        await MetroSPApiClient(session=session)._api_wrapper(
+            method="get", url="http://x"
+        )
 
 
 async def test_api_wrapper_unexpected_exception_raises_api_error():
     session, _ = _make_session(side_effect=RuntimeError("boom"))
     with pytest.raises(MetroSPApiClientError, match="Something really wrong"):
-        await MetroSPApiClient(session=session)._api_wrapper(method="get", url="http://x")
+        await MetroSPApiClient(session=session)._api_wrapper(
+            method="get", url="http://x"
+        )
 
 
 async def test_api_wrapper_http_status_error_raises_api_error():
@@ -100,11 +108,15 @@ async def test_api_wrapper_http_status_error_raises_api_error():
         request_info=MagicMock(), history=()
     )
     with pytest.raises(MetroSPApiClientError):
-        await MetroSPApiClient(session=session)._api_wrapper(method="get", url="http://x")
+        await MetroSPApiClient(session=session)._api_wrapper(
+            method="get", url="http://x"
+        )
 
 
 async def test_api_wrapper_returns_json_on_success():
     payload = {"Data": [{"Code": 1}]}
     session, _ = _make_session(payload)
-    result = await MetroSPApiClient(session=session)._api_wrapper(method="get", url="http://x")
+    result = await MetroSPApiClient(session=session)._api_wrapper(
+        method="get", url="http://x"
+    )
     assert result == payload

@@ -4,15 +4,14 @@ from datetime import timedelta
 from unittest.mock import AsyncMock
 
 import pytest
-
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.metro_sp.api import MetroSPApiClientError
+from custom_components.metro_sp.const import DOMAIN
 from custom_components.metro_sp.coordinator import (
     UPDATE_INTERVAL,
     MetroSPDataUpdateCoordinator,
 )
-from custom_components.metro_sp.const import DOMAIN
 
 
 def _make_coordinator(hass, lines=None):
@@ -26,7 +25,7 @@ def _make_coordinator(hass, lines=None):
 
 
 def test_update_interval_is_five_minutes():
-    assert UPDATE_INTERVAL == timedelta(minutes=5)
+    assert timedelta(minutes=5) == UPDATE_INTERVAL
 
 
 def test_init_sets_domain_name(hass):
@@ -67,5 +66,12 @@ async def test_update_data_raises_update_failed_on_api_error(hass):
 async def test_update_data_preserves_all_line_fields(hass, sample_lines):
     coord, _ = _make_coordinator(hass, lines=sample_lines)
     result = await coord._async_update_data()
-    for key in ("Code", "ColorName", "ColorHex", "StatusCode", "StatusLabel", "Description"):
+    for key in (
+        "Code",
+        "ColorName",
+        "ColorHex",
+        "StatusCode",
+        "StatusLabel",
+        "Description",
+    ):
         assert key in result[1]

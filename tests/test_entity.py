@@ -29,11 +29,16 @@ def test_device_info_manufacturer():
 
 
 def test_device_info_identifiers_contain_domain():
-    assert any(DOMAIN in str(i) for i in _make_entity()._attr_device_info["identifiers"])
+    assert any(
+        DOMAIN in str(i) for i in _make_entity()._attr_device_info["identifiers"]
+    )
 
 
 def test_device_info_identifiers_contain_entry_id():
-    assert any("my_id" in str(i) for i in _make_entity("my_id")._attr_device_info["identifiers"])
+    assert any(
+        "my_id" in str(i)
+        for i in _make_entity("my_id")._attr_device_info["identifiers"]
+    )
 
 
 def test_coordinator_stored():

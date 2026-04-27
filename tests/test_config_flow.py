@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 
@@ -26,8 +25,8 @@ async def test_step_user_shows_form(hass, enable_custom_integrations):
 
 
 async def test_step_user_success_creates_entry(hass, enable_custom_integrations):
-    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as Mock:
-        Mock.return_value.async_get_lines = AsyncMock(return_value=[])
+    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as mock:
+        mock.return_value.async_get_lines = AsyncMock(return_value=[])
         result = await _start_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input={}
@@ -38,8 +37,8 @@ async def test_step_user_success_creates_entry(hass, enable_custom_integrations)
 
 
 async def test_step_user_success_sets_unique_id(hass, enable_custom_integrations):
-    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as Mock:
-        Mock.return_value.async_get_lines = AsyncMock(return_value=[])
+    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as mock:
+        mock.return_value.async_get_lines = AsyncMock(return_value=[])
         await _start_flow(hass)
         await hass.config_entries.flow.async_configure(
             (await _start_flow(hass))["flow_id"], user_input={}
@@ -49,12 +48,14 @@ async def test_step_user_success_sets_unique_id(hass, enable_custom_integrations
 
 
 async def test_step_user_duplicate_aborts(hass, enable_custom_integrations):
-    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as Mock:
-        Mock.return_value.async_get_lines = AsyncMock(return_value=[])
+    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as mock:
+        mock.return_value.async_get_lines = AsyncMock(return_value=[])
         flow1 = await _start_flow(hass)
         await hass.config_entries.flow.async_configure(flow1["flow_id"], user_input={})
         flow2 = await _start_flow(hass)
-        result = await hass.config_entries.flow.async_configure(flow2["flow_id"], user_input={})
+        result = await hass.config_entries.flow.async_configure(
+            flow2["flow_id"], user_input={}
+        )
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "already_configured"
 
@@ -62,8 +63,8 @@ async def test_step_user_duplicate_aborts(hass, enable_custom_integrations):
 async def test_step_user_communication_error_shows_connection_error(
     hass, enable_custom_integrations
 ):
-    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as Mock:
-        Mock.return_value.async_get_lines = AsyncMock(
+    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as mock:
+        mock.return_value.async_get_lines = AsyncMock(
             side_effect=MetroSPApiClientCommunicationError("down")
         )
         result = await _start_flow(hass)
@@ -77,8 +78,8 @@ async def test_step_user_communication_error_shows_connection_error(
 async def test_step_user_generic_error_shows_unknown_error(
     hass, enable_custom_integrations
 ):
-    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as Mock:
-        Mock.return_value.async_get_lines = AsyncMock(
+    with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as mock:
+        mock.return_value.async_get_lines = AsyncMock(
             side_effect=MetroSPApiClientError("oops")
         )
         result = await _start_flow(hass)

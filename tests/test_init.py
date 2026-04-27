@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-from unittest.mock import patch
-
-import pytest
 from homeassistant.config_entries import ConfigEntryState
-
-from custom_components.metro_sp.const import DOMAIN
 
 
 async def test_setup_entry_loads_successfully(hass, setup_integration):
@@ -52,13 +47,17 @@ async def test_unload_entry_makes_entities_unavailable(hass, setup_integration):
         assert state.state == "unavailable"
 
 
-async def test_reload_entry_restores_loaded_state(hass, setup_integration, mock_api_client):
+async def test_reload_entry_restores_loaded_state(
+    hass, setup_integration, mock_api_client
+):
     await hass.config_entries.async_reload(setup_integration.entry_id)
     await hass.async_block_till_done()
     assert setup_integration.state == ConfigEntryState.LOADED
 
 
-async def test_async_reload_entry_calls_reload(hass, setup_integration, mock_api_client):
+async def test_async_reload_entry_calls_reload(
+    hass, setup_integration, mock_api_client
+):
     from custom_components.metro_sp import async_reload_entry
 
     await async_reload_entry(hass, setup_integration)

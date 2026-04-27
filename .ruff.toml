@@ -23,3 +23,14 @@ keep-runtime-typing = true
 
 [lint.mccabe]
 max-complexity = 25
+
+[lint.per-file-ignores]
+"tests/**" = [
+    "S101",    # assert is normal in pytest
+    "D",       # no docstrings required in tests
+    "ANN",     # no type annotations required in tests
+    "ARG001",  # fixtures are used implicitly by pytest
+    "PLC0415", # local imports inside fixtures are intentional
+    "SLF001",  # testing private HA attrs and internal methods is intentional
+    "PLR2004", # magic numbers in test assertions are fine
+]
