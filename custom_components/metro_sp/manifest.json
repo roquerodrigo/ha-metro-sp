@@ -2,11 +2,11 @@
   "domain": "metro_sp",
   "name": "Metrô SP",
   "codeowners": [
-    "@rodrigogoncalvesroque"
+    "@roquerodrigo"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/rodrigogoncalvesroque/ha-metro-sp",
+  "documentation": "https://github.com/roquerodrigo/ha-metro-sp",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/rodrigogoncalvesroque/ha-metro-sp/issues",
-  "version": "1.0.0"
+  "issue_tracker": "https://github.com/roquerodrigo/ha-metro-sp/issues",
+  "version": "1.0.1"
 }
