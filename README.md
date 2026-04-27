@@ -3,6 +3,10 @@
 Integração custom para o [Home Assistant](https://www.home-assistant.io/) que exibe o status operacional em tempo real
 das linhas do Metrô SP e CPTM.
 
+![Dashboard](images/dashboard.png)
+
+![Integração](images/integration.png)
+
 ## Linhas suportadas
 
 | Linha | Nome      | Operador      |
@@ -52,7 +56,12 @@ Cada linha gera um **device** independente com dois sensores:
 
 ### HACS
 
-Em breve.
+1. No Home Assistant, acesse **HACS → Integrações**.
+2. Clique no menu (⋮) e selecione **Repositórios personalizados**.
+3. Adicione a URL `https://github.com/roquerodrigo/ha-metro-sp` e selecione a categoria **Integração**.
+4. Clique em **Baixar** na integração **Metrô SP**.
+5. Reinicie o Home Assistant.
+6. Acesse **Configurações → Dispositivos e Serviços → Adicionar Integração** e pesquise por **Metrô SP**.
 
 ## Atualização dos dados
 
