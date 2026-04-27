@@ -1,42 +1,44 @@
-"""Tests for MetroSPLineSensor."""
-
 from __future__ import annotations
+
+from unittest.mock import MagicMock
 
 import pytest
 
+from custom_components.metro_sp.sensor import MetroSPLineSensor
 
-# ---------------------------------------------------------------------------
-# Entity creation via real HA setup
-# ---------------------------------------------------------------------------
+
+def _sensor(line_data: dict, sensor_key: str) -> MetroSPLineSensor:
+    line_code = line_data["Code"]
+    coord = MagicMock()
+    coord.data = {line_code: line_data}
+    coord.config_entry.entry_id = "eid"
+    return MetroSPLineSensor(coordinator=coord, line_code=line_code, sensor_key=sensor_key)
+
+
+def _line(code=1, color_name="Azul", color_hex="#0455A1", status_label="OK", description=""):
+    return {"Code": code, "ColorName": color_name, "ColorHex": color_hex,
+            "StatusLabel": status_label, "Description": description}
+
 
 async def test_sensor_count(hass, setup_integration):
     assert len(hass.states.async_all("sensor")) == 4
 
 
 async def test_operacao_state_value(hass, setup_integration):
-    state = hass.states.get("sensor.metro_sp_linha_1_azul_operacao")
-    assert state.state == "Operação Normal"
+    assert hass.states.get("sensor.metro_sp_linha_1_azul_operacao").state == "Operação Normal"
 
 
 async def test_detalhes_state_value(hass, setup_integration):
-    state = hass.states.get("sensor.metro_sp_linha_1_azul_detalhes")
-    assert state.state == "Linha operando normalmente."
+    assert hass.states.get("sensor.metro_sp_linha_1_azul_detalhes").state == "Linha operando normalmente."
 
 
 async def test_detalhes_empty_description(hass, setup_integration):
-    state = hass.states.get("sensor.metro_sp_linha_3_vermelha_detalhes")
-    assert state.state == ""
+    assert hass.states.get("sensor.metro_sp_linha_3_vermelha_detalhes").state == ""
 
-
-# ---------------------------------------------------------------------------
-# extra_state_attributes
-# ---------------------------------------------------------------------------
 
 async def test_operacao_attributes_keys(hass, setup_integration):
-    state = hass.states.get("sensor.metro_sp_linha_1_azul_operacao")
-    assert set(state.attributes) >= {
-        "status_code", "status_color", "color_name", "color_hex", "line_code"
-    }
+    attrs = hass.states.get("sensor.metro_sp_linha_1_azul_operacao").attributes
+    assert {"status_code", "status_color", "color_name", "color_hex", "line_code"} <= set(attrs)
 
 
 async def test_operacao_attributes_values(hass, setup_integration):
@@ -45,84 +47,33 @@ async def test_operacao_attributes_values(hass, setup_integration):
     assert attrs["color_name"] == "Azul"
     assert attrs["color_hex"] == "#0455A1"
     assert attrs["line_code"] == 1
-
-
-async def test_operacao_attributes_status_color(hass, setup_integration):
-    attrs = hass.states.get("sensor.metro_sp_linha_1_azul_operacao").attributes
     assert attrs["status_color"] == "#00FF00"
 
 
-# ---------------------------------------------------------------------------
-# entity_picture
-# ---------------------------------------------------------------------------
-
-async def test_entity_picture_contains_color_hex(hass, setup_integration):
-    from homeassistant.helpers import entity_registry as er
-    ent_reg = er.async_get(hass)
-    entity = ent_reg.async_get("sensor.metro_sp_linha_1_azul_operacao")
-    assert entity is not None
-
-    state = hass.states.get("sensor.metro_sp_linha_1_azul_operacao")
-    # entity_picture is an attribute when set
-    pic = state.attributes.get("entity_picture", "")
-    assert "0455A1" in pic or pic == ""  # URL contains hex without #
-
-
-async def test_entity_picture_uses_ui_avatars(hass, setup_integration):
-    from custom_components.metro_sp.sensor import MetroSPLineSensor
-    from unittest.mock import MagicMock
-
-    coord = MagicMock()
-    coord.data = {
-        1: {
-            "Code": 1,
-            "ColorName": "Azul",
-            "ColorHex": "#0455A1",
-            "StatusLabel": "OK",
-            "Description": "",
-        }
-    }
-    coord.config_entry.entry_id = "eid"
-    sensor = MetroSPLineSensor(coordinator=coord, line_code=1, sensor_key="operacao")
-    assert "ui-avatars.com" in sensor.entity_picture
+def test_entity_picture_contains_color_hex():
+    sensor = _sensor(_line(color_hex="#0455A1"), "operacao")
     assert "0455A1" in sensor.entity_picture
+    assert "ui-avatars.com" in sensor.entity_picture
     assert "#" not in sensor.entity_picture
 
 
-async def test_entity_picture_default_color_when_missing(hass, setup_integration):
-    from custom_components.metro_sp.sensor import MetroSPLineSensor
-    from unittest.mock import MagicMock
-
-    coord = MagicMock()
-    coord.data = {
-        1: {"Code": 1, "ColorName": "Azul", "StatusLabel": "OK", "Description": ""}
-    }
-    coord.config_entry.entry_id = "eid"
-    sensor = MetroSPLineSensor(coordinator=coord, line_code=1, sensor_key="operacao")
-    assert "888888" in sensor.entity_picture
+def test_entity_picture_default_color_when_missing():
+    line = _line()
+    line.pop("ColorHex")
+    assert "888888" in _sensor(line, "operacao").entity_picture
 
 
-# ---------------------------------------------------------------------------
-# icon
-# ---------------------------------------------------------------------------
-
-async def test_icon_is_mdi_subway(hass, setup_integration):
-    from custom_components.metro_sp.sensor import MetroSPLineSensor
-    from unittest.mock import MagicMock
-
-    coord = MagicMock()
-    coord.data = {
-        1: {"Code": 1, "ColorName": "Azul", "ColorHex": "#0455A1",
-            "StatusLabel": "OK", "Description": ""}
-    }
-    coord.config_entry.entry_id = "eid"
-    sensor = MetroSPLineSensor(coordinator=coord, line_code=1, sensor_key="operacao")
-    assert sensor.icon == "mdi:subway"
+def test_icon_is_mdi_subway():
+    assert _sensor(_line(), "operacao").icon == "mdi:subway"
 
 
-# ---------------------------------------------------------------------------
-# Operator mapping
-# ---------------------------------------------------------------------------
+def test_detalhes_none_description_returns_empty_string():
+    assert _sensor(_line(description=None), "detalhes").native_value == ""
+
+
+def test_operacao_returns_status_label():
+    assert _sensor(_line(status_label="Paralisação"), "operacao").native_value == "Paralisação"
+
 
 @pytest.mark.parametrize("line_code,expected_manufacturer", [
     (1, "Metrô SP"),
@@ -141,52 +92,6 @@ async def test_icon_is_mdi_subway(hass, setup_integration):
     (17, "ViaMobilidade"),
     (99, "Metrô SP / CPTM"),
 ])
-async def test_operator_mapping(hass, line_code, expected_manufacturer):
-    from custom_components.metro_sp.sensor import MetroSPLineSensor
-    from unittest.mock import MagicMock
-
-    coord = MagicMock()
-    coord.data = {
-        line_code: {
-            "Code": line_code,
-            "ColorName": "Teste",
-            "ColorHex": "#000000",
-            "StatusLabel": "OK",
-            "Description": "",
-        }
-    }
-    coord.config_entry.entry_id = "eid"
-    sensor = MetroSPLineSensor(coordinator=coord, line_code=line_code, sensor_key="operacao")
+def test_operator_mapping(line_code, expected_manufacturer):
+    sensor = _sensor(_line(code=line_code), "operacao")
     assert sensor._attr_device_info["manufacturer"] == expected_manufacturer
-
-
-# ---------------------------------------------------------------------------
-# native_value — edge cases
-# ---------------------------------------------------------------------------
-
-async def test_detalhes_none_description_returns_empty_string(hass):
-    from custom_components.metro_sp.sensor import MetroSPLineSensor
-    from unittest.mock import MagicMock
-
-    coord = MagicMock()
-    coord.data = {
-        1: {"Code": 1, "ColorName": "Azul", "ColorHex": "#0455A1",
-            "StatusLabel": "OK", "Description": None}
-    }
-    coord.config_entry.entry_id = "eid"
-    sensor = MetroSPLineSensor(coordinator=coord, line_code=1, sensor_key="detalhes")
-    assert sensor.native_value == ""
-
-
-async def test_operacao_returns_status_label(hass):
-    from custom_components.metro_sp.sensor import MetroSPLineSensor
-    from unittest.mock import MagicMock
-
-    coord = MagicMock()
-    coord.data = {
-        1: {"Code": 1, "ColorName": "Azul", "ColorHex": "#0455A1",
-            "StatusLabel": "Paralisação", "Description": ""}
-    }
-    coord.config_entry.entry_id = "eid"
-    sensor = MetroSPLineSensor(coordinator=coord, line_code=1, sensor_key="operacao")
-    assert sensor.native_value == "Paralisação"

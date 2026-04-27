@@ -1,5 +1,3 @@
-"""Tests for the API client."""
-
 from __future__ import annotations
 
 import socket
@@ -28,10 +26,6 @@ def _make_session(payload=None, side_effect=None):
     return session, response
 
 
-# ---------------------------------------------------------------------------
-# Exception hierarchy
-# ---------------------------------------------------------------------------
-
 def test_communication_error_is_api_error():
     assert issubclass(MetroSPApiClientCommunicationError, MetroSPApiClientError)
 
@@ -39,10 +33,6 @@ def test_communication_error_is_api_error():
 def test_api_error_is_exception():
     assert issubclass(MetroSPApiClientError, Exception)
 
-
-# ---------------------------------------------------------------------------
-# _verify_response_or_raise
-# ---------------------------------------------------------------------------
 
 def test_verify_response_calls_raise_for_status():
     response = MagicMock()
@@ -58,10 +48,6 @@ def test_verify_response_propagates_http_error():
     with pytest.raises(aiohttp.ClientResponseError):
         _verify_response_or_raise(response)
 
-
-# ---------------------------------------------------------------------------
-# async_get_lines — happy path
-# ---------------------------------------------------------------------------
 
 async def test_async_get_lines_returns_data(sample_lines):
     session, _ = _make_session({"Data": sample_lines})
@@ -83,10 +69,6 @@ async def test_async_get_lines_calls_request_once(sample_lines):
     await MetroSPApiClient(session=session).async_get_lines()
     session.request.assert_awaited_once()
 
-
-# ---------------------------------------------------------------------------
-# _api_wrapper — error paths
-# ---------------------------------------------------------------------------
 
 async def test_api_wrapper_timeout_raises_communication_error():
     session, _ = _make_session(side_effect=TimeoutError("timed out"))

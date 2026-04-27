@@ -1,5 +1,3 @@
-"""Tests for MetroSPFlowHandler config flow."""
-
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
@@ -21,19 +19,11 @@ async def _start_flow(hass):
     )
 
 
-# ---------------------------------------------------------------------------
-# Step user — initial visit (no input)
-# ---------------------------------------------------------------------------
-
 async def test_step_user_shows_form(hass, enable_custom_integrations):
     result = await _start_flow(hass)
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
 
-
-# ---------------------------------------------------------------------------
-# Step user — success
-# ---------------------------------------------------------------------------
 
 async def test_step_user_success_creates_entry(hass, enable_custom_integrations):
     with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as Mock:
@@ -42,7 +32,6 @@ async def test_step_user_success_creates_entry(hass, enable_custom_integrations)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input={}
         )
-
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == "Metrô SP"
     assert result["data"] == {}
@@ -52,10 +41,9 @@ async def test_step_user_success_sets_unique_id(hass, enable_custom_integrations
     with patch("custom_components.metro_sp.config_flow.MetroSPApiClient") as Mock:
         Mock.return_value.async_get_lines = AsyncMock(return_value=[])
         await _start_flow(hass)
-        result = await hass.config_entries.flow.async_configure(
+        await hass.config_entries.flow.async_configure(
             (await _start_flow(hass))["flow_id"], user_input={}
         )
-
     entry = hass.config_entries.async_entries(DOMAIN)[0]
     assert entry.unique_id == DOMAIN
 
@@ -67,14 +55,9 @@ async def test_step_user_duplicate_aborts(hass, enable_custom_integrations):
         await hass.config_entries.flow.async_configure(flow1["flow_id"], user_input={})
         flow2 = await _start_flow(hass)
         result = await hass.config_entries.flow.async_configure(flow2["flow_id"], user_input={})
-
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "already_configured"
 
-
-# ---------------------------------------------------------------------------
-# Step user — error paths
-# ---------------------------------------------------------------------------
 
 async def test_step_user_communication_error_shows_connection_error(
     hass, enable_custom_integrations
@@ -87,7 +70,6 @@ async def test_step_user_communication_error_shows_connection_error(
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input={}
         )
-
     assert result["type"] == FlowResultType.FORM
     assert result["errors"]["base"] == "connection"
 
@@ -103,7 +85,6 @@ async def test_step_user_generic_error_shows_unknown_error(
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input={}
         )
-
     assert result["type"] == FlowResultType.FORM
     assert result["errors"]["base"] == "unknown"
 

@@ -1,10 +1,8 @@
-"""Shared fixtures for metro_sp tests."""
-
 from __future__ import annotations
 
 import copy
 from collections.abc import Generator
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -46,17 +44,13 @@ def sample_data(sample_lines) -> dict[int, dict]:
 
 @pytest.fixture
 def enable_custom_integrations(hass):
-    """Allow custom integrations to load."""
     from homeassistant.loader import DATA_CUSTOM_COMPONENTS
     hass.data.pop(DATA_CUSTOM_COMPONENTS, None)
 
 
 @pytest.fixture
 def mock_api_client(sample_lines) -> Generator:
-    """Patch MetroSPApiClient so it never hits the real API."""
-    with patch(
-        "custom_components.metro_sp.MetroSPApiClient"
-    ) as MockClass:
+    with patch("custom_components.metro_sp.MetroSPApiClient") as MockClass:
         instance = MockClass.return_value
         instance.async_get_lines = AsyncMock(return_value=sample_lines)
         yield instance
@@ -64,7 +58,6 @@ def mock_api_client(sample_lines) -> Generator:
 
 @pytest.fixture
 async def setup_integration(hass, mock_api_client, enable_custom_integrations):
-    """Set up the metro_sp integration and return the config entry."""
     from pytest_homeassistant_custom_component.common import MockConfigEntry
     from custom_components.metro_sp.const import DOMAIN
 

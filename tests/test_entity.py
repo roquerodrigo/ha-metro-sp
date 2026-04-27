@@ -1,5 +1,3 @@
-"""Tests for MetroSPEntity base class."""
-
 from __future__ import annotations
 
 from unittest.mock import MagicMock
@@ -31,13 +29,11 @@ def test_device_info_manufacturer():
 
 
 def test_device_info_identifiers_contain_domain():
-    identifiers = _make_entity()._attr_device_info["identifiers"]
-    assert any(DOMAIN in str(i) for i in identifiers)
+    assert any(DOMAIN in str(i) for i in _make_entity()._attr_device_info["identifiers"])
 
 
 def test_device_info_identifiers_contain_entry_id():
-    identifiers = _make_entity(entry_id="my_id")._attr_device_info["identifiers"]
-    assert any("my_id" in str(i) for i in identifiers)
+    assert any("my_id" in str(i) for i in _make_entity("my_id")._attr_device_info["identifiers"])
 
 
 def test_coordinator_stored():

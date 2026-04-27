@@ -1,9 +1,7 @@
-"""Tests for MetroSPDataUpdateCoordinator."""
-
 from __future__ import annotations
 
 from datetime import timedelta
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -32,13 +30,11 @@ def test_update_interval_is_five_minutes():
 
 
 def test_init_sets_domain_name(hass):
-    coord = MetroSPDataUpdateCoordinator(hass=hass)
-    assert coord.name == DOMAIN
+    assert MetroSPDataUpdateCoordinator(hass=hass).name == DOMAIN
 
 
 def test_init_sets_update_interval(hass):
-    coord = MetroSPDataUpdateCoordinator(hass=hass)
-    assert coord.update_interval == UPDATE_INTERVAL
+    assert MetroSPDataUpdateCoordinator(hass=hass).update_interval == UPDATE_INTERVAL
 
 
 async def test_update_data_indexes_by_code(hass, sample_lines):
@@ -71,6 +67,5 @@ async def test_update_data_raises_update_failed_on_api_error(hass):
 async def test_update_data_preserves_all_line_fields(hass, sample_lines):
     coord, _ = _make_coordinator(hass, lines=sample_lines)
     result = await coord._async_update_data()
-    line = result[1]
     for key in ("Code", "ColorName", "ColorHex", "StatusCode", "StatusLabel", "Description"):
-        assert key in line
+        assert key in result[1]
