@@ -61,22 +61,13 @@ def mock_api_client(sample_lines: list[dict]) -> Generator:
 
 
 @pytest.fixture
-def mock_image_generator() -> Generator:
-    with patch(
-        "custom_components.metro_sp.async_generate_line_images",
-        new=AsyncMock(return_value=None),
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-async def setup_integration(
-    hass, mock_api_client, mock_image_generator, enable_custom_integrations
-):
+async def setup_integration(hass, mock_api_client, enable_custom_integrations):
+    from homeassistant.setup import async_setup_component
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     from custom_components.metro_sp.const import DOMAIN
 
+    await async_setup_component(hass, "http", {})
     entry = MockConfigEntry(domain=DOMAIN, data={})
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)

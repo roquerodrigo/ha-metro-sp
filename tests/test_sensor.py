@@ -71,14 +71,14 @@ async def test_operacao_attributes_values(hass, setup_integration):
     assert attrs["status_color"] == "#00FF00"
 
 
-def test_entity_picture_uses_local_path():
+def test_entity_picture_uses_static_path():
     sensor = _sensor(_line(code=1, color_name="Azul"), "operacao")
-    assert sensor.entity_picture == "/local/metro_sp/linha_1_azul.png"
+    assert sensor.entity_picture == "/api/metro_sp/lines/linha_1_azul.png"
 
 
 def test_entity_picture_slugifies_color_name():
     sensor = _sensor(_line(code=5, color_name="Lilás"), "operacao")
-    assert sensor.entity_picture == "/local/metro_sp/linha_5_lilas.png"
+    assert sensor.entity_picture == "/api/metro_sp/lines/linha_5_lilas.png"
 
 
 def test_icon_is_mdi_subway():
