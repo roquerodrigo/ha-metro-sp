@@ -12,6 +12,7 @@ from .api import MetroSPApiClient
 from .const import DOMAIN, LOGGER  # noqa: F401
 from .coordinator import MetroSPDataUpdateCoordinator
 from .data import MetroSPData
+from .images import async_generate_line_images
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -34,6 +35,10 @@ async def async_setup_entry(
     )
 
     await coordinator.async_config_entry_first_refresh()
+
+    await async_generate_line_images(
+        hass, async_get_clientsession(hass), coordinator.data
+    )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
