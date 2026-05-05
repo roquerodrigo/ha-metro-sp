@@ -62,10 +62,12 @@ def mock_api_client(sample_lines: list[dict]) -> Generator:
 
 @pytest.fixture
 async def setup_integration(hass, mock_api_client, enable_custom_integrations):
+    from homeassistant.setup import async_setup_component
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     from custom_components.metro_sp.const import DOMAIN
 
+    await async_setup_component(hass, "http", {})
     entry = MockConfigEntry(domain=DOMAIN, data={})
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)

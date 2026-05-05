@@ -10,6 +10,7 @@ from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .entity import MetroSPEntity
+from .images import line_image_url
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -85,10 +86,8 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
 
     @property
     def entity_picture(self) -> str:
-        """Return an avatar URL with the line number and color."""
-        color_hex = self._line_data.get("ColorHex", "#888888").lstrip("#")
-        code = self._line_data.get("Code", "")
-        return f"https://ui-avatars.com/api/?color=fff&name={code}&bold=true&format=svg&font-size=0.6&background={color_hex}"
+        """Return the URL of the per-line PNG bundled with the integration."""
+        return line_image_url(self._line_data["Code"], self._line_data["ColorName"])
 
     @property
     def native_value(self) -> str:

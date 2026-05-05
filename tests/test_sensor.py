@@ -71,17 +71,14 @@ async def test_operacao_attributes_values(hass, setup_integration):
     assert attrs["status_color"] == "#00FF00"
 
 
-def test_entity_picture_contains_color_hex():
-    sensor = _sensor(_line(color_hex="#0455A1"), "operacao")
-    assert "0455A1" in sensor.entity_picture
-    assert "ui-avatars.com" in sensor.entity_picture
-    assert "#" not in sensor.entity_picture
+def test_entity_picture_uses_static_path():
+    sensor = _sensor(_line(code=1, color_name="Azul"), "operacao")
+    assert sensor.entity_picture == "/api/metro_sp/lines/linha_1_azul.png"
 
 
-def test_entity_picture_default_color_when_missing():
-    line = _line()
-    line.pop("ColorHex")
-    assert "888888" in _sensor(line, "operacao").entity_picture
+def test_entity_picture_slugifies_color_name():
+    sensor = _sensor(_line(code=5, color_name="Lilás"), "operacao")
+    assert sensor.entity_picture == "/api/metro_sp/lines/linha_5_lilas.png"
 
 
 def test_icon_is_mdi_subway():
