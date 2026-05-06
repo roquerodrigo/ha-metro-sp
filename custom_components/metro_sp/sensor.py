@@ -70,18 +70,26 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
         super().__init__(coordinator)
         self._line_code = line_code
         self._sensor_key = sensor_key
-        line = coordinator.data[line_code]
-        color_slug = slugify(line["ColorName"])
-        base_id = f"metro_sp_linha_{line_code}_{color_slug}"
-
-        self._attr_unique_id = f"sensor.{base_id}_{sensor_key}"
-        self._attr_translation_key = sensor_key
-        self.entity_id = f"sensor.{base_id}_{sensor_key}"
+        color_slug = slugify(coordinator.data[line_code]["ColorName"])
+        self._base_id = f"metro_sp_linha_{line_code}_{color_slug}"
+        # entity_id must be set in __init__ — HA reads it as suggested_object_id
+        # before the entity is registered.
+        self.entity_id = f"sensor.{self._base_id}_{sensor_key}"
 
     @property
     def _line_data(self) -> MetroSPLine:
         """Return the latest payload for this sensor's line."""
         return self.coordinator.data[self._line_code]
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique id derived from the line's base id and sensor key."""
+        return f"sensor.{self._base_id}_{self._sensor_key}"
+
+    @property
+    def translation_key(self) -> str:
+        """Return the translation key for this sensor."""
+        return self._sensor_key
 
     @property
     def device_info(self) -> DeviceInfo:
