@@ -17,14 +17,25 @@ def _sensor(line_data: dict, sensor_key: str) -> MetroSPLineSensor:
     )
 
 
-def _line(
-    code=1, color_name="Azul", color_hex="#0455A1", status_label="OK", description=""
+def _line(  # noqa: PLR0913
+    *,
+    code=1,
+    color_name="Azul",
+    color_hex="#0455A1",
+    status_label="OK",
+    description="",
+    status_code=1,
+    status_color="#00FF00",
+    line_str="1",
 ):
     return {
         "Code": code,
         "ColorName": color_name,
         "ColorHex": color_hex,
+        "Line": line_str,
+        "StatusCode": status_code,
         "StatusLabel": status_label,
+        "StatusColor": status_color,
         "Description": description,
     }
 
@@ -91,6 +102,18 @@ def test_operacao_returns_status_label():
     )
 
 
+def test_device_info_includes_entry_id_and_line_code():
+    sensor = _sensor(_line(code=4), "operacao")
+    info = sensor.device_info
+    assert info is not None
+    assert any("eid_4" in str(i) for i in info["identifiers"])
+
+
+def test_device_info_name_uses_color_titlecased():
+    sensor = _sensor(_line(code=3, color_name="vermelha"), "operacao")
+    assert sensor.device_info["name"] == "Linha 3 - Vermelha"
+
+
 @pytest.mark.parametrize(
     ("line_code", "expected_manufacturer"),
     [
@@ -113,4 +136,4 @@ def test_operacao_returns_status_label():
 )
 def test_operator_mapping(line_code, expected_manufacturer):
     sensor = _sensor(_line(code=line_code), "operacao")
-    assert sensor._attr_device_info["manufacturer"] == expected_manufacturer
+    assert sensor.device_info["manufacturer"] == expected_manufacturer

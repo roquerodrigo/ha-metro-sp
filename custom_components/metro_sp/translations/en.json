@@ -23,5 +23,11 @@
                 "name": "Operation Details"
             }
         }
+    },
+    "issues": {
+        "deprecated_api": {
+            "title": "Metrô SP API endpoint deprecated",
+            "description": "A Metrô SP API endpoint used by this integration is deprecated. Confirm to dismiss this notice; update the integration when a new release is available."
+        }
     }
 }

@@ -8,9 +8,11 @@ import pytest
 
 from custom_components.metro_sp.api import (
     MetroSPApiClient,
+    _verify_response_or_raise,
+)
+from custom_components.metro_sp.exceptions import (
     MetroSPApiClientCommunicationError,
     MetroSPApiClientError,
-    _verify_response_or_raise,
 )
 
 
@@ -120,3 +122,14 @@ async def test_api_wrapper_returns_json_on_success():
         method="get", url="http://x"
     )
     assert result == payload
+
+
+async def test_api_wrapper_re_raises_subclass_unchanged():
+    """A pre-mapped MetroSPApiClientCommunicationError must not be wrapped twice."""
+    session, _ = _make_session(
+        side_effect=MetroSPApiClientCommunicationError("already mapped"),
+    )
+    with pytest.raises(MetroSPApiClientCommunicationError, match="already mapped"):
+        await MetroSPApiClient(session=session)._api_wrapper(
+            method="get", url="http://x"
+        )

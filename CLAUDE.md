@@ -1,51 +1,93 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) agents working in this repository.
 
-## Comandos úteis
+## Always read `CODE_STYLE.md` first
+
+Before creating, renaming or restructuring any file/class/function, **read [`CODE_STYLE.md`](./CODE_STYLE.md)**. It is the single source of truth for conventions: language, file organisation, naming, typing, properties vs `__init__`, imports, docstrings, comments, coordinator pattern, repairs/diagnostics layout, translations, lint workflow.
+
+For user-facing topics (what's included, how to install, useful commands, CI list), see [`README.md`](./README.md).
+
+This file deliberately avoids restating those rules — it only adds:
+
+1. The verification workflow agents must run after every change.
+2. The architectural reasoning that is not obvious from `CODE_STYLE.md` alone.
+3. Local development quirks specific to this repo.
+
+## Verification workflow
+
+**After every code change, always run lint then tests, in that order, before declaring the task done:**
 
 ```bash
-scripts/setup      # instala dependências (requirements.txt)
-scripts/develop    # sobe o Home Assistant em modo debug com a integração carregada
-scripts/lint       # formata e corrige o código com ruff
+scripts/lint && pytest
 ```
 
-O HA sobe com config em `config/` e `PYTHONPATH` apontando para `custom_components/` — não são necessários symlinks.
+- `scripts/lint` runs `ruff format`, `ruff check --fix` and `mypy` (`mypy.ini`). Fix any failure and re-run before moving on.
+- `pytest` enforces a **95 % coverage gate** (`pytest.ini`).
 
-Ao reiniciar o HA durante desenvolvimento, limpe o registry para que entity/device IDs sejam recriados com os valores atuais:
-```bash
-rm config/.storage/core.entity_registry config/.storage/core.device_registry
+Both gates mirror CI (`.github/workflows/lint.yml`). Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
+
+## Local development
+
+- `scripts/setup` installs `requirements.txt` + `requirements_test.txt`.
+- `scripts/develop` starts Home Assistant in debug mode with the integration loaded. Config lives in `config/`; `PYTHONPATH` points at `custom_components/`. No symlinks needed.
+- When restarting HA during development, clear the registry so entity/device IDs are recreated with current values:
+
+  ```bash
+  rm config/.storage/core.entity_registry config/.storage/core.device_registry
+  ```
+
+- macOS Bluetooth causes intermittent crashes (PyObjC/CoreBluetooth race, exit 134). Unrelated to this integration. `config/configuration.yaml` already sets `bluetooth: passive_scanning: false` as mitigation.
+
+## Architecture
+
+The integration follows the HA `DataUpdateCoordinator` pattern:
+
+```
+config_flow.py   → tests connectivity and creates the ConfigEntry (no credentials)
+__init__.py      → instantiates ApiClient + DataUpdateCoordinator, performs the first refresh,
+                   registers the per-line static images under STATIC_URL_PREFIX
+coordinator.py   → polls every UPDATE_INTERVAL (5 min); returns dict[int, MetroSPLine] keyed by line Code
+sensor.py        → reads coordinator.data and creates two sensors per line (operacao + detalhes)
 ```
 
-O Bluetooth do macOS causa crash intermitente (PyObjC/CoreBluetooth race condition, exit 134). Não é relacionado à integração. `config/configuration.yaml` já tem `bluetooth: passive_scanning: false` como mitigação.
+### Entry typing
 
-## Arquitetura
+`data.py` defines `MetroSPConfigEntry = ConfigEntry[MetroSPData]` and the `MetroSPData(client, coordinator, integration)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
 
-A integração segue o padrão `DataUpdateCoordinator` do HA. O fluxo é:
+The single `hass.data` entry is `_STATIC_REGISTERED_KEY` in `__init__.py` — a per-`hass` sentinel so we register the `/metro_sp` static path exactly once across reloads. It is *not* per-entry state.
 
-```
-config_flow.py   → cria a ConfigEntry (sem credenciais, só testa conectividade)
-__init__.py      → instancia MetroSPApiClient + MetroSPDataUpdateCoordinator, faz o primeiro refresh
-coordinator.py   → polling a cada 5 min; retorna dict[int, dict] indexado por Code da linha
-sensor.py        → lê coordinator.data e cria 2 entidades por linha (operacao + detalhes)
-```
+### API and exceptions
 
-### Dados da API
+`api.py` exposes `MetroSPApiClient` plus the `_verify_response_or_raise` helper. The Metrô SP API (`https://apim-proximotrem-prd-brazilsouth-001.azure-api.net/api/v1/lines`) is **public, no auth**, so there is no `AuthenticationError` and no reauth flow.
 
-`GET https://apim-proximotrem-prd-brazilsouth-001.azure-api.net/api/v1/lines` — pública, sem auth.
+Exceptions live under `exceptions/`:
 
-Campos relevantes por linha: `Code`, `ColorName`, `ColorHex`, `Line`, `StatusCode`, `StatusLabel`, `StatusColor`, `Description`.
+- `MetroSPApiClientError` (base)
+- `MetroSPApiClientCommunicationError` (timeout, connection, socket)
 
-### Entidades por linha
+`_api_wrapper` maps `TimeoutError`, `aiohttp.ClientError` and `socket.gaierror` to `CommunicationError`; any other exception becomes the base error.
 
-Cada linha vira um **device** independente com `manufacturer` mapeado por operador (`_LINE_OPERATORS` em `sensor.py`). Cada device tem dois sensores:
+### Per-line entities
 
-- **Operação** (`sensor.metro_sp_linha_{N}_{cor}_operacao`): `native_value = StatusLabel`, atributos de status e cor, `entity_picture` gerada via ui-avatars.com com número e cor da linha.
+Each line becomes an independent **device** with `manufacturer` mapped per operator (`_LINE_OPERATORS` in `sensor.py`). Each device has two sensors:
+
+- **Operação** (`sensor.metro_sp_linha_{N}_{cor}_operacao`): `native_value = StatusLabel`; attributes carry status / colour fields. `entity_picture` points at the local `/metro_sp/linha_{N}.png` static asset registered in `__init__.py`.
 - **Detalhes da Operação** (`sensor.metro_sp_linha_{N}_{cor}_detalhes`): `native_value = Description`.
 
-O `entity_id` é sugerido explicitamente no construtor via `self.entity_id = "sensor.{base_id}_{key}"`, que o HA usa como `suggested_object_id` no registry na primeira criação.
+Because each line is its own device, `device_info` lives as a `@property` on `MetroSPLineSensor`, **not** on the `MetroSPEntity` base. The base only carries integration-wide attributes (`_attr_attribution`, `_attr_has_entity_name`).
 
-## CI
+The `entity_id` is suggested explicitly in the constructor via `self.entity_id = "sensor.{base_id}_{key}"`, which HA records as `suggested_object_id` in the registry on first creation.
 
-- `lint.yml`: ruff check + format (Python 3.14)
-- `validate.yml`: hassfest (validação de manifesto HA) + HACS validation — roda em push/PR para main e diariamente
+### Diagnostics
+
+`diagnostics.py` returns `MetroSPDiagnosticsPayload` (entry metadata + the indexed coordinator dump). `TO_REDACT` is empty today — keep the `async_redact_data` plumbing so adding a redacted key later is a one-line change. `.github/ISSUE_TEMPLATE/bug.yml` asks users to attach the dump.
+
+### Repairs
+
+`repairs.py` is the entry point HA calls when the user clicks **Fix** on an issue:
+
+- `async_create_fix_flow(hass, issue_id, data)` returns a `RepairsFlow`. Branch on `issue_id` for multiple kinds; the default returns `ConfirmRepairFlow`.
+- `async_raise_deprecated_api_issue(hass)` is the sample helper that registers an issue. Call helpers like this from the coordinator/setup when you detect a recoverable problem.
+
+Issue strings live under `issues.<issue_id>` in the translation files.

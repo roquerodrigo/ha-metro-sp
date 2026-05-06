@@ -5,11 +5,11 @@ from unittest.mock import AsyncMock, patch
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 
-from custom_components.metro_sp.api import (
+from custom_components.metro_sp.const import DOMAIN
+from custom_components.metro_sp.exceptions import (
     MetroSPApiClientCommunicationError,
     MetroSPApiClientError,
 )
-from custom_components.metro_sp.const import DOMAIN
 
 
 async def _start_flow(hass):

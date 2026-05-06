@@ -1,5 +1,7 @@
 """Constants for metro_sp."""
 
+from __future__ import annotations
+
 from logging import Logger, getLogger
 
 LOGGER: Logger = getLogger(__package__)

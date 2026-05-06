@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from custom_components.metro_sp.const import ATTRIBUTION, DOMAIN
+from custom_components.metro_sp.const import ATTRIBUTION
 from custom_components.metro_sp.entity import MetroSPEntity
 
 
@@ -20,25 +20,10 @@ def test_has_entity_name():
     assert _make_entity()._attr_has_entity_name is True
 
 
-def test_device_info_name():
-    assert _make_entity()._attr_device_info["name"] == "Metrô SP"
-
-
-def test_device_info_manufacturer():
-    assert _make_entity()._attr_device_info["manufacturer"] == "Metrô SP / CPTM"
-
-
-def test_device_info_identifiers_contain_domain():
-    assert any(
-        DOMAIN in str(i) for i in _make_entity()._attr_device_info["identifiers"]
-    )
-
-
-def test_device_info_identifiers_contain_entry_id():
-    assert any(
-        "my_id" in str(i)
-        for i in _make_entity("my_id")._attr_device_info["identifiers"]
-    )
+def test_base_does_not_carry_device_info():
+    """Per-line device_info is set by subclasses; base must not stomp it."""
+    entity = _make_entity()
+    assert getattr(entity, "_attr_device_info", None) is None
 
 
 def test_coordinator_stored():

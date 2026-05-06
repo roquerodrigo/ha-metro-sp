@@ -6,12 +6,12 @@ from unittest.mock import AsyncMock
 import pytest
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from custom_components.metro_sp.api import MetroSPApiClientError
 from custom_components.metro_sp.const import DOMAIN
 from custom_components.metro_sp.coordinator import (
     UPDATE_INTERVAL,
     MetroSPDataUpdateCoordinator,
 )
+from custom_components.metro_sp.exceptions import MetroSPApiClientError
 
 
 def _make_coordinator(hass, lines=None):

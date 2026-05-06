@@ -23,5 +23,11 @@
                 "name": "Detalhes da Operação"
             }
         }
+    },
+    "issues": {
+        "deprecated_api": {
+            "title": "Endpoint da API do Metrô SP descontinuado",
+            "description": "Um endpoint da API do Metrô SP usado por esta integração foi descontinuado. Confirme para dispensar este aviso; atualize a integração quando uma nova versão estiver disponível."
+        }
     }
 }

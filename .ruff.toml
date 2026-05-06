@@ -27,6 +27,8 @@ max-complexity = 25
 [lint.per-file-ignores]
 "tests/**" = [
     "S101",    # assert is normal in pytest
+    "S105",    # hardcoded-password-string is fine for fake test credentials
+    "S106",    # hardcoded-password-func-arg is fine for fake test credentials
     "D",       # no docstrings required in tests
     "ANN",     # no type annotations required in tests
     "ARG001",  # fixtures are used implicitly by pytest

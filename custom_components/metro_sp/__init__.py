@@ -11,7 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.loader import async_get_loaded_integration
 
 from .api import MetroSPApiClient
-from .const import DOMAIN, LOGGER, STATIC_URL_PREFIX  # noqa: F401
+from .const import DOMAIN, STATIC_URL_PREFIX
 from .coordinator import MetroSPDataUpdateCoordinator
 from .data import MetroSPData
 

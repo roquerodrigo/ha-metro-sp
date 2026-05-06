@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -16,9 +16,14 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from .coordinator import MetroSPDataUpdateCoordinator
-    from .data import MetroSPConfigEntry
+    from .data import (
+        MetroSPConfigEntry,
+        MetroSPLine,
+        MetroSPSensorAttributes,
+    )
 
-_SENSOR_KEYS = ("operacao", "detalhes")
+_SENSOR_KEYS: tuple[str, ...] = ("operacao", "detalhes")
+_DEFAULT_OPERATOR = "Metrô SP / CPTM"
 
 _LINE_OPERATORS: dict[int, str] = {
     1: "Metrô SP",
@@ -66,22 +71,29 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
         self._line_code = line_code
         self._sensor_key = sensor_key
         line = coordinator.data[line_code]
-        line_name = f"Linha {line['Code']} - {line['ColorName'].title()}"
         color_slug = slugify(line["ColorName"])
         base_id = f"metro_sp_linha_{line_code}_{color_slug}"
 
         self._attr_unique_id = f"sensor.{base_id}_{sensor_key}"
         self._attr_translation_key = sensor_key
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{coordinator.config_entry.entry_id}_{line_code}")},
-            name=line_name,
-            manufacturer=_LINE_OPERATORS.get(line_code, "Metrô SP / CPTM"),
-        )
         self.entity_id = f"sensor.{base_id}_{sensor_key}"
 
     @property
-    def _line_data(self) -> dict[str, Any]:
+    def _line_data(self) -> MetroSPLine:
+        """Return the latest payload for this sensor's line."""
         return self.coordinator.data[self._line_code]
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return per-line device info; manufacturer is operator-mapped."""
+        line = self._line_data
+        line_name = f"Linha {line['Code']} - {line['ColorName'].title()}"
+        entry_id = self.coordinator.config_entry.entry_id
+        return DeviceInfo(
+            identifiers={(DOMAIN, f"{entry_id}_{self._line_code}")},
+            name=line_name,
+            manufacturer=_LINE_OPERATORS.get(self._line_code, _DEFAULT_OPERATOR),
+        )
 
     @property
     def entity_picture(self) -> str:
@@ -101,13 +113,13 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
         return "mdi:subway"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> MetroSPSensorAttributes:
         """Return extra state attributes."""
         data = self._line_data
         return {
-            "status_code": data.get("StatusCode"),
-            "status_color": data.get("StatusColor"),
-            "color_name": data.get("ColorName"),
-            "color_hex": data.get("ColorHex"),
-            "line_code": data.get("Code"),
+            "status_code": data["StatusCode"],
+            "status_color": data["StatusColor"],
+            "color_name": data["ColorName"],
+            "color_hex": data["ColorHex"],
+            "line_code": data["Code"],
         }
