@@ -6,16 +6,20 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, LOGGER
 from .exceptions import MetroSPApiClientError
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from homeassistant.core import HomeAssistant
 
     from .data import MetroSPConfigEntry, MetroSPLine
 
 UPDATE_INTERVAL = timedelta(minutes=5)
+FAILURE_GRACE_PERIOD = timedelta(minutes=5)
 
 
 class MetroSPDataUpdateCoordinator(DataUpdateCoordinator["dict[int, MetroSPLine]"]):
@@ -31,11 +35,29 @@ class MetroSPDataUpdateCoordinator(DataUpdateCoordinator["dict[int, MetroSPLine]
             name=DOMAIN,
             update_interval=UPDATE_INTERVAL,
         )
+        self._first_failure_at: datetime | None = None
 
     async def _async_update_data(self) -> dict[int, MetroSPLine]:
-        """Fetch data from API and index by line code."""
+        """Fetch data from API; tolerate failures shorter than the grace period."""
         try:
             lines = await self.config_entry.runtime_data.client.async_get_lines()
         except MetroSPApiClientError as exception:
-            raise UpdateFailed(exception) from exception
+            return self._handle_failure(exception)
+
+        self._first_failure_at = None
         return {line["Code"]: line for line in lines}
+
+    def _handle_failure(
+        self, exception: MetroSPApiClientError
+    ) -> dict[int, MetroSPLine]:
+        """Suppress transient errors; raise UpdateFailed past the grace period."""
+        now = dt_util.utcnow()
+        if self._first_failure_at is None:
+            self._first_failure_at = now
+        if (
+            self.data is not None
+            and now - self._first_failure_at < FAILURE_GRACE_PERIOD
+        ):
+            LOGGER.warning("Metrô SP API error; keeping last known data: %s", exception)
+            return self.data
+        raise UpdateFailed(exception) from exception
