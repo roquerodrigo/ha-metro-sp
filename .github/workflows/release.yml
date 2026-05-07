@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Tag and publish release
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version bump
+        id: bump
+        env:
+          LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          level=patch
+          if echo "$LABELS" | grep -qiE '"(release:skip|no-release|skip-release)"'; then
+            level=skip
+          elif echo "$LABELS" | grep -qiE '"(release:major|breaking|breaking-change)"'; then
+            level=major
+          elif echo "$LABELS" | grep -qiE '"(release:minor|feature|enhancement)"'; then
+            level=minor
+          elif echo "$LABELS" | grep -qiE '"(release:patch|bug|bugfix|fix|dependencies)"'; then
+            level=patch
+          elif echo "$PR_TITLE" | grep -qE '^[a-zA-Z]+(\([^)]*\))?!:'; then
+            level=major
+          elif echo "$PR_TITLE" | grep -qiE '^feat(\([^)]*\))?:'; then
+            level=minor
+          fi
+          echo "level=$level" >> "$GITHUB_OUTPUT"
+          echo "Selected bump level: $level"
+
+      - name: Compute next version
+        if: steps.bump.outputs.level != 'skip'
+        id: version
+        run: |
+          set -euo pipefail
+          latest=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          if [ -z "$latest" ]; then
+            manifest_version=$(python3 -c "import json; print(json.load(open('custom_components/metro_sp/manifest.json'))['version'])")
+            latest="v${manifest_version}"
+          fi
+          ver=${latest#v}
+          IFS=. read -r major minor patch <<< "$ver"
+          case "${{ steps.bump.outputs.level }}" in
+            major) major=$((major+1)); minor=0; patch=0 ;;
+            minor) minor=$((minor+1)); patch=0 ;;
+            patch) patch=$((patch+1)) ;;
+          esac
+          new="${major}.${minor}.${patch}"
+          echo "previous_tag=$latest" >> "$GITHUB_OUTPUT"
+          echo "new_version=$new" >> "$GITHUB_OUTPUT"
+          echo "new_tag=v${new}" >> "$GITHUB_OUTPUT"
+          echo "Previous tag: $latest"
+          echo "New tag: v${new}"
+
+      - name: Update manifest version
+        if: steps.bump.outputs.level != 'skip'
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path("custom_components/metro_sp/manifest.json")
+          content = path.read_text()
+          new_version = os.environ["NEW_VERSION"]
+          updated, n = re.subn(
+              r'("version"\s*:\s*")[^"]+(")',
+              lambda m: f'{m.group(1)}{new_version}{m.group(2)}',
+              content,
+              count=1,
+          )
+          if n != 1:
+              raise SystemExit("manifest.json: version field not found")
+          # sanity: must remain valid JSON with the expected version
+          assert json.loads(updated)["version"] == new_version
+          path.write_text(updated)
+          PY
+
+      - name: Commit, tag and push
+        if: steps.bump.outputs.level != 'skip'
+        env:
+          NEW_TAG: ${{ steps.version.outputs.new_tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add custom_components/metro_sp/manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(release): ${NEW_TAG} [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+          git tag -a "${NEW_TAG}" -m "Release ${NEW_TAG}"
+          git push origin "${NEW_TAG}"
+
+      - name: Create GitHub release with auto-generated notes
+        if: steps.bump.outputs.level != 'skip'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_TAG: ${{ steps.version.outputs.new_tag }}
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+        run: |
+          set -euo pipefail
+          args=(--title "${NEW_TAG}" --generate-notes)
+          if git rev-parse -q --verify "refs/tags/${PREVIOUS_TAG}" >/dev/null; then
+            args+=(--notes-start-tag "${PREVIOUS_TAG}")
+          fi
+          gh release create "${NEW_TAG}" "${args[@]}"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "Bump level: ${{ steps.bump.outputs.level }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.bump.outputs.level }}" != "skip" ]; then
+            echo "Released: ${{ steps.version.outputs.new_tag }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Release skipped via PR label." >> "$GITHUB_STEP_SUMMARY"
+          fi
