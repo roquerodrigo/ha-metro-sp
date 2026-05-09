@@ -58,8 +58,13 @@ async def test_detalhes_state_value(hass, setup_integration):
     )
 
 
-async def test_detalhes_empty_description(hass, setup_integration):
-    assert hass.states.get("sensor.metro_sp_linha_3_vermelha_detalhes").state == ""
+async def test_detalhes_empty_description_falls_back_to_status_label(
+    hass, setup_integration
+):
+    assert (
+        hass.states.get("sensor.metro_sp_linha_3_vermelha_detalhes").state
+        == "Velocidade Reduzida"
+    )
 
 
 async def test_operacao_attributes_keys(hass, setup_integration):
@@ -91,8 +96,31 @@ def test_icon_is_mdi_subway():
     assert _sensor(_line(), "operacao").icon == "mdi:subway"
 
 
-def test_detalhes_none_description_returns_empty_string():
-    assert _sensor(_line(description=None), "detalhes").native_value == ""
+def test_detalhes_none_description_falls_back_to_status_label():
+    assert (
+        _sensor(
+            _line(status_label="Paralisação", description=None), "detalhes"
+        ).native_value
+        == "Paralisação"
+    )
+
+
+def test_detalhes_empty_string_description_falls_back_to_status_label():
+    assert (
+        _sensor(
+            _line(status_label="Velocidade Reduzida", description=""), "detalhes"
+        ).native_value
+        == "Velocidade Reduzida"
+    )
+
+
+def test_detalhes_returns_description_when_present():
+    assert (
+        _sensor(
+            _line(description="Linha operando normalmente."), "detalhes"
+        ).native_value
+        == "Linha operando normalmente."
+    )
 
 
 def test_operacao_returns_status_label():

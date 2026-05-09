@@ -110,10 +110,16 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
 
     @property
     def native_value(self) -> str:
-        """Return the current value for this sensor."""
+        """
+        Return the current value for this sensor.
+
+        For ``detalhes``, fall back to the line's StatusLabel when the API
+        returns no description — keeps the sensor informative instead of
+        empty when there's no incident-specific text.
+        """
         if self._sensor_key == "operacao":
             return self._line_data["StatusLabel"]
-        return self._line_data.get("Description") or ""
+        return self._line_data.get("Description") or self._line_data["StatusLabel"]
 
     @property
     def icon(self) -> str:
