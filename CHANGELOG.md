@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.0.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v1.1.3...v2.0.0) (2026-05-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sensor:** `sensor.metro_sp_linha_*_detalhes` entities are removed; consumers should read the `description` attribute on the matching `sensor.metro_sp_linha_*_operacao` entity.
+
+### Bug Fixes
+
+* **sensor:** drop detalhes sensor and expose description as attribute ([79633aa](https://github.com/roquerodrigo/ha-metro-sp/commit/79633aa4205ee2f16e0dd0a46bfc4c1b431611f7))
+
+
+### Documentation
+
+* standardize CODE_STYLE.md template ([b92ffde](https://github.com/roquerodrigo/ha-metro-sp/commit/b92ffde766b4a08bf66446bdb8d96da55bdf21da))
+* standardize CODE_STYLE.md template ([60585ff](https://github.com/roquerodrigo/ha-metro-sp/commit/60585ff5f5ffd9262f92f6199e280adef09110a8))
+
 ## [1.1.3](https://github.com/roquerodrigo/ha-metro-sp/compare/v1.1.2...v1.1.3) (2026-05-09)
 
 
