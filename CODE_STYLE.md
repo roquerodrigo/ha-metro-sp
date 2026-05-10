@@ -17,23 +17,39 @@ and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
   what is committed to disk stays English (with the API-payload exception
   above and the user-facing pt-BR translations).
 - User-facing strings live in `custom_components/metro_sp/translations/{en,pt-BR}.json`
-  only — do not hardcode them in Python.
+  only — never hardcoded in Python.
 
 ## File organization
 
 - **One top-level class per file.** Multiple semantically related classes (e.g.
-  exception families) get grouped into a package directory with one class per
-  submodule and an `__init__.py` re-exporting the public symbols.
+  exception families, sensor entities for one platform) get grouped into a
+  package directory with one class per submodule and an `__init__.py`
+  re-exporting the public symbols.
   - Example: `exceptions/` contains `api_client_error.py`,
     `api_client_communication_error.py`, plus `__init__.py`.
 - **TypedDicts and `type` aliases do not count as "classes"** for this rule —
-  they live alongside related code (typically in `data.py`) and do not need
+  they live alongside related code (typically in `data.py`) and don't need
   their own file.
 - **Helper functions** may live in the same file as the single class that uses
   them (e.g. `_verify_response_or_raise` in `api.py`).
 - **`__init__.py` of the integration package** wires `async_setup_entry`,
   `async_unload_entry`, `async_reload_entry` (plus the static-www registration
   the integration needs) and nothing else.
+
+## Entities: one class per entity
+
+- **One class per entity.** Every entity gets its own dedicated class — never
+  share a generic class parameterized by an `EntityDescription` subclass with
+  callable fields like `value_fn` or `action_fn`. Encode the entity's behaviour
+  directly in its class via `@property` and class-level `_attr_*` constants
+  (or a plain `EntityDescription` instance assigned at the class level).
+  - Don't write a `MetroSPSensorDescription` subclass with a `value_fn` field.
+  - Do write one class per `(line, sensor_key)` pair — the existing
+    `MetroSPLineSensor` already keys on `_sensor_key` to differentiate
+    `operacao` vs `detalhes` without a description-with-callable indirection.
+- The reason: each entity is a discrete contract; mixing them through a
+  generic class hides the contract behind indirection and discourages per-entity
+  refinement (icons, state attributes, custom logic).
 
 ## Naming
 
@@ -119,6 +135,36 @@ explaining the deliberate narrowing.
   declarations. If a file has so many sections that you feel the need for
   visual separators, split it into multiple files instead.
 
+## Logging
+
+- Each module uses the package-level `LOGGER` from `const.py`
+  (`LOGGER: Logger = getLogger(__package__)`); never call `logging.getLogger(...)`
+  ad-hoc.
+- Use **lazy `%`-formatting**, never f-strings — they force string interpolation
+  even when the level is filtered:
+
+  ```python
+  LOGGER.warning("Metrô SP API error; keeping last known data: %s", exception)   # ✓
+  LOGGER.warning(f"Metrô SP API error: {exception}")                              # ✗
+  ```
+
+- Levels:
+  - `debug` — successful fetch summaries, every-poll diagnostics.
+  - `info` — one-shot lifecycle (setup complete).
+  - `warning` — recoverable failures (transient API error, falling back).
+  - `error` / `exception` — unrecoverable in current cycle; pair `exception`
+    with caught exceptions inside `except` blocks for full tracebacks.
+
+## Error messages
+
+- Format: `"Failed to <verb> <object>: <cause>"` where `<cause>` is the
+  exception or a short reason. Keep them short and grep-able.
+- Custom exceptions get the same hierarchy:
+  `MetroSPApiClientError` (base) → `MetroSPApiClientCommunicationError`
+  (timeout, connection, DNS). The Metrô SP API is unauthenticated, so there
+  is no `AuthenticationError`. Wrap raw upstream errors at the API client
+  boundary; everything above only catches the custom hierarchy.
+
 ## Coordinator and runtime data
 
 - All API state flows through `entry.runtime_data: MetroSPData`
@@ -151,12 +197,46 @@ explaining the deliberate narrowing.
 - Issue strings live under `issues.<issue_id>`; flow strings under
   `config.step.<step_id>`; entity names under `entity.sensor.<key>.name`.
 
+## Pre-commit hooks
+
+`pre-commit` is a dev dependency (`requirements.txt`) and `.pre-commit-config.yaml`
+mirrors `scripts/lint` (ruff format, ruff check, mypy). Install once per
+clone:
+
+```bash
+pre-commit install
+```
+
+The hook runs the same gates as CI on every commit. Skip it only on
+emergency `git commit --no-verify` and immediately re-run `scripts/lint`.
+
+## Conventional commits
+
+All commits follow [Conventional Commits](https://www.conventionalcommits.org/),
+which `release-please` parses to bump the version and generate `CHANGELOG.md`:
+
+| Type | Meaning | Bump |
+|---|---|---|
+| `feat` | New feature | minor |
+| `fix` | Bug fix | patch |
+| `perf` | Performance improvement | patch |
+| `deps` | Dependency bump | patch |
+| `docs` | Documentation only | none |
+| `refactor` | Refactor without behavior change | none |
+| `test` | Test-only change | none |
+| `ci` | CI / tooling change | none |
+| `chore` | Anything else (rarely) | none |
+
+- Subject line: imperative mood, lowercase, no trailing period.
+- Use scopes when useful: `fix(sensor): fall back detalhes to operacao when description is empty`.
+- A `BREAKING CHANGE:` footer (or `!` after type) bumps the major version.
+
 ## Linting and verification
 
 - Ruff configuration lives in `.ruff.toml` with `select = ["ALL"]`.
 - Mypy configuration lives in `mypy.ini`. Both run from `scripts/lint`.
 - After every change run `scripts/lint && pytest`. Both gates mirror CI
-  (`.github/workflows/lint.yml`).
+  (`.github/workflows/lint.yml` + `tests.yml`).
 - Tests live in `tests/`, mirroring the production layout. The 95 % coverage
   gate (`pytest.ini`) prevents untested code from sneaking in. When a test
   exercises a state that is impossible under the new types, update or remove
