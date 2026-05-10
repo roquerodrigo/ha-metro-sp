@@ -46,6 +46,7 @@ class MetroSPSensorAttributes(TypedDict):
     color_name: str
     color_hex: str
     line_code: int
+    description: str
 
 
 class MetroSPDiagnosticsEntry(TypedDict):

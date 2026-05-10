@@ -44,9 +44,9 @@ and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
   directly in its class via `@property` and class-level `_attr_*` constants
   (or a plain `EntityDescription` instance assigned at the class level).
   - Don't write a `MetroSPSensorDescription` subclass with a `value_fn` field.
-  - Do write one class per `(line, sensor_key)` pair — the existing
-    `MetroSPLineSensor` already keys on `_sensor_key` to differentiate
-    `operacao` vs `detalhes` without a description-with-callable indirection.
+  - Do write one class per entity — the existing `MetroSPLineSensor`
+    encodes the operacao behaviour directly via `@property` and class-level
+    `_attr_*` constants, with no description-with-callable indirection.
 - The reason: each entity is a discrete contract; mixing them through a
   generic class hides the contract behind indirection and discourages per-entity
   refinement (icons, state attributes, custom logic).
@@ -228,7 +228,7 @@ which `release-please` parses to bump the version and generate `CHANGELOG.md`:
 | `chore` | Anything else (rarely) | none |
 
 - Subject line: imperative mood, lowercase, no trailing period.
-- Use scopes when useful: `fix(sensor): fall back detalhes to operacao when description is empty`.
+- Use scopes when useful: `fix(sensor): fall back description attribute to status label when empty`.
 - A `BREAKING CHANGE:` footer (or `!` after type) bumps the major version.
 
 ## Linting and verification

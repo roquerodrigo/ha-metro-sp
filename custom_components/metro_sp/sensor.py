@@ -22,7 +22,6 @@ if TYPE_CHECKING:
         MetroSPSensorAttributes,
     )
 
-_SENSOR_KEYS: tuple[str, ...] = ("operacao", "detalhes")
 _DEFAULT_OPERATOR = "Metrô SP / CPTM"
 
 _LINE_OPERATORS: dict[int, str] = {
@@ -48,33 +47,33 @@ async def async_setup_entry(
     entry: MetroSPConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up sensors for all lines returned by the API."""
+    """Set up one sensor per line returned by the API."""
     coordinator = entry.runtime_data.coordinator
     async_add_entities(
-        MetroSPLineSensor(coordinator=coordinator, line_code=code, sensor_key=key)
+        MetroSPLineSensor(coordinator=coordinator, line_code=code)
         for code in coordinator.data
-        for key in _SENSOR_KEYS
     )
 
 
 class MetroSPLineSensor(MetroSPEntity, SensorEntity):
     """Sensor for a single Metrô SP / CPTM line."""
 
+    _attr_translation_key = "operacao"
+    _attr_icon = "mdi:subway"
+
     def __init__(
         self,
         coordinator: MetroSPDataUpdateCoordinator,
         line_code: int,
-        sensor_key: str,
     ) -> None:
         """Initialize."""
         super().__init__(coordinator)
         self._line_code = line_code
-        self._sensor_key = sensor_key
         color_slug = slugify(coordinator.data[line_code]["ColorName"])
         self._base_id = f"metro_sp_linha_{line_code}_{color_slug}"
         # entity_id must be set in __init__ — HA reads it as suggested_object_id
         # before the entity is registered.
-        self.entity_id = f"sensor.{self._base_id}_{sensor_key}"
+        self.entity_id = f"sensor.{self._base_id}_operacao"
 
     @property
     def _line_data(self) -> MetroSPLine:
@@ -83,13 +82,8 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
 
     @property
     def unique_id(self) -> str:
-        """Return the unique id derived from the line's base id and sensor key."""
-        return f"sensor.{self._base_id}_{self._sensor_key}"
-
-    @property
-    def translation_key(self) -> str:
-        """Return the translation key for this sensor."""
-        return self._sensor_key
+        """Return the unique id derived from the line's base id."""
+        return f"sensor.{self._base_id}_operacao"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -110,25 +104,18 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
 
     @property
     def native_value(self) -> str:
-        """
-        Return the current value for this sensor.
-
-        For ``detalhes``, fall back to the line's StatusLabel when the API
-        returns no description — keeps the sensor informative instead of
-        empty when there's no incident-specific text.
-        """
-        if self._sensor_key == "operacao":
-            return self._line_data["StatusLabel"]
-        return self._line_data.get("Description") or self._line_data["StatusLabel"]
-
-    @property
-    def icon(self) -> str:
-        """Return the entity icon."""
-        return "mdi:subway"
+        """Return the line's status label."""
+        return self._line_data["StatusLabel"]
 
     @property
     def extra_state_attributes(self) -> MetroSPSensorAttributes:
-        """Return extra state attributes."""
+        """
+        Return extra state attributes.
+
+        ``description`` carries the upstream incident text (or the status
+        label as a fallback) — kept off the state so the 255-char HA limit
+        cannot drop the value to ``unknown``.
+        """
         data = self._line_data
         return {
             "status_code": data["StatusCode"],
@@ -136,4 +123,5 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
             "color_name": data["ColorName"],
             "color_hex": data["ColorHex"],
             "line_code": data["Code"],
+            "description": data.get("Description") or data["StatusLabel"],
         }
