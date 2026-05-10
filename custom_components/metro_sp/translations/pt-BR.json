@@ -18,9 +18,6 @@
         "sensor": {
             "operacao": {
                 "name": "Operação"
-            },
-            "detalhes": {
-                "name": "Detalhes da Operação"
             }
         }
     },

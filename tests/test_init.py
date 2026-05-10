@@ -8,15 +8,13 @@ async def test_setup_entry_loads_successfully(hass, setup_integration):
 
 
 async def test_setup_entry_creates_sensor_entities(hass, setup_integration):
-    assert len(hass.states.async_all("sensor")) == 4
+    assert len(hass.states.async_all("sensor")) == 2
 
 
 async def test_setup_entry_sensor_entity_ids(hass, setup_integration):
     entity_ids = {s.entity_id for s in hass.states.async_all("sensor")}
     assert "sensor.metro_sp_linha_1_azul_operacao" in entity_ids
-    assert "sensor.metro_sp_linha_1_azul_detalhes" in entity_ids
     assert "sensor.metro_sp_linha_3_vermelha_operacao" in entity_ids
-    assert "sensor.metro_sp_linha_3_vermelha_detalhes" in entity_ids
 
 
 async def test_setup_entry_operacao_state(hass, setup_integration):
@@ -25,10 +23,10 @@ async def test_setup_entry_operacao_state(hass, setup_integration):
     assert state.state == "Operação Normal"
 
 
-async def test_setup_entry_detalhes_state(hass, setup_integration):
-    state = hass.states.get("sensor.metro_sp_linha_1_azul_detalhes")
+async def test_setup_entry_description_attribute(hass, setup_integration):
+    state = hass.states.get("sensor.metro_sp_linha_1_azul_operacao")
     assert state is not None
-    assert state.state == "Linha operando normalmente."
+    assert state.attributes["description"] == "Linha operando normalmente."
 
 
 async def test_setup_entry_registers_update_listener(hass, setup_integration):

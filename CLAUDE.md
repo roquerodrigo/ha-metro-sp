@@ -48,7 +48,8 @@ config_flow.py   → tests connectivity and creates the ConfigEntry (no credenti
 __init__.py      → instantiates ApiClient + DataUpdateCoordinator, performs the first refresh,
                    registers the per-line static images under STATIC_URL_PREFIX
 coordinator.py   → polls every UPDATE_INTERVAL (5 min); returns dict[int, MetroSPLine] keyed by line Code
-sensor.py        → reads coordinator.data and creates two sensors per line (operacao + detalhes)
+sensor.py        → reads coordinator.data and creates one sensor per line (operacao);
+                   the incident text is exposed via the ``description`` state attribute
 ```
 
 ### Entry typing
@@ -70,14 +71,15 @@ Exceptions live under `exceptions/`:
 
 ### Per-line entities
 
-Each line becomes an independent **device** with `manufacturer` mapped per operator (`_LINE_OPERATORS` in `sensor.py`). Each device has two sensors:
+Each line becomes an independent **device** with `manufacturer` mapped per operator (`_LINE_OPERATORS` in `sensor.py`). Each device has one sensor:
 
-- **Operação** (`sensor.metro_sp_linha_{N}_{cor}_operacao`): `native_value = StatusLabel`; attributes carry status / colour fields. `entity_picture` points at the local `/metro_sp/linha_{N}.png` static asset registered in `__init__.py`.
-- **Detalhes da Operação** (`sensor.metro_sp_linha_{N}_{cor}_detalhes`): `native_value = Description`.
+- **Operação** (`sensor.metro_sp_linha_{N}_{cor}_operacao`): `native_value = StatusLabel`; attributes carry status / colour fields plus `description` (the upstream `Description`, falling back to `StatusLabel` when empty). `entity_picture` points at the local `/metro_sp/linha_{N}.png` static asset registered in `__init__.py`.
+
+`description` is intentionally an attribute, not a separate sensor: HA truncates state values longer than 255 characters to `unknown`, and the upstream incident text routinely exceeds that.
 
 Because each line is its own device, `device_info` lives as a `@property` on `MetroSPLineSensor`, **not** on the `MetroSPEntity` base. The base only carries integration-wide attributes (`_attr_attribution`, `_attr_has_entity_name`).
 
-The `entity_id` is suggested explicitly in the constructor via `self.entity_id = "sensor.{base_id}_{key}"`, which HA records as `suggested_object_id` in the registry on first creation.
+The `entity_id` is suggested explicitly in the constructor via `self.entity_id = "sensor.{base_id}_operacao"`, which HA records as `suggested_object_id` in the registry on first creation.
 
 ### Diagnostics
 

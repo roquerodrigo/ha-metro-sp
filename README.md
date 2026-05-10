@@ -28,22 +28,22 @@ das linhas do Metrô SP e CPTM.
 
 ## Sensores criados
 
-Cada linha gera um **device** independente com dois sensores:
+Cada linha gera um **device** independente com um sensor:
 
-| Sensor               | Entity ID                              | Descrição                                     |
-|----------------------|----------------------------------------|-----------------------------------------------|
-| Operação             | `sensor.metro_sp_linha_X_cor_operacao` | Status atual da linha (ex: "Operação Normal") |
-| Detalhes da Operação | `sensor.metro_sp_linha_X_cor_detalhes` | Descrição detalhada de ocorrências            |
+| Sensor   | Entity ID                              | Descrição                                     |
+|----------|----------------------------------------|-----------------------------------------------|
+| Operação | `sensor.metro_sp_linha_X_cor_operacao` | Status atual da linha (ex: "Operação Normal") |
 
 ### Atributos do sensor de Operação
 
-| Atributo       | Descrição                                   |
-|----------------|---------------------------------------------|
-| `status_code`  | Código do status (ex: `OperacaoNormal`)     |
-| `status_color` | Cor do status (`verde`, `amarelo`, `cinza`) |
-| `color_name`   | Nome da cor da linha                        |
-| `color_hex`    | Código hexadecimal da cor da linha          |
-| `line_code`    | Número da linha                             |
+| Atributo       | Descrição                                                                       |
+|----------------|---------------------------------------------------------------------------------|
+| `description`  | Descrição detalhada de ocorrências (ou o status quando não há texto específico) |
+| `status_code`  | Código do status (ex: `OperacaoNormal`)                                         |
+| `status_color` | Cor do status (`verde`, `amarelo`, `cinza`)                                     |
+| `color_name`   | Nome da cor da linha                                                            |
+| `color_hex`    | Código hexadecimal da cor da linha                                              |
+| `line_code`    | Número da linha                                                                 |
 
 ## Instalação
 
