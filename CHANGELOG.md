@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.0.0...v2.0.1) (2026-05-22)
+
+
+### Dependencies
+
+* **deps:** bump the python-production group across 1 directory with 2 updates ([1734ba0](https://github.com/roquerodrigo/ha-metro-sp/commit/1734ba09c77004d69c3396fad3288d2edc513cb6))
+* **deps:** bump the python-production group with 2 updates ([b534d74](https://github.com/roquerodrigo/ha-metro-sp/commit/b534d745d24ffd877ed761af0131383d129cbcd8))
+
 ## [2.0.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v1.1.3...v2.0.0) (2026-05-10)
 
 

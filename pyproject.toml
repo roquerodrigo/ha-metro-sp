@@ -5,7 +5,7 @@
 # managed project; ``[tool.uv] package = false`` keeps uv from trying
 # to build/install it.
 name = "ha-metro-sp"
-version = "2.0.0"
+version = "2.0.1"
 description = "Home Assistant integration for São Paulo metro status"
 requires-python = ">=3.14.2"
 
