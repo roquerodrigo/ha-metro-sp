@@ -1,5 +1,8 @@
 # Metrô SP para Home Assistant
 
+[![CI](https://github.com/roquerodrigo/ha-metro-sp/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-metro-sp/actions/workflows/ci.yml)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+
 Integração custom para o [Home Assistant](https://www.home-assistant.io/) que exibe o status operacional em tempo real
 das linhas do Metrô SP e CPTM.
 
