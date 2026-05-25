@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.2](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.0.1...v2.0.2) (2026-05-25)
+
+
+### Documentation
+
+* add CI and HACS badges ([d70abe3](https://github.com/roquerodrigo/ha-metro-sp/commit/d70abe3eba6bd1f3e94d4a46fe767ab77abc07f3))
+* add CI and HACS badges ([98c4048](https://github.com/roquerodrigo/ha-metro-sp/commit/98c40488fd5c75b20ed305bd462f3994ef949f69))
+
 ## [2.0.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.0.0...v2.0.1) (2026-05-22)
 
 
