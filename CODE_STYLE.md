@@ -1,8 +1,9 @@
 # Code Style Guide
 
-Style conventions for the `ha-metro-sp` project. Run `scripts/lint`
-before committing — it executes `ruff format`, `ruff check --fix` and `mypy`,
-and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
+Style conventions for the `ha-metro-sp` project. Before committing, run
+`uv run ruff format .`, `uv run ruff check . --fix` and
+`uv run mypy custom_components/metro_sp`; they must exit cleanly.
+`uv run pytest` (with the 95 % coverage gate) follows.
 
 **Always read this file before adding or restructuring code.**
 
@@ -62,7 +63,7 @@ and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
 
 ## Typing
 
-**Strict typing. No generics, no `Any`.** Mypy on `scripts/lint` enforces this.
+**Strict typing. No generics, no `Any`.** Mypy (`uv run mypy custom_components/metro_sp`) enforces this.
 
 Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` / `tuple` /
 `set`, `dict[str, Any]`, `Mapping[str, Any]`.
@@ -199,16 +200,18 @@ explaining the deliberate narrowing.
 
 ## Pre-commit hooks
 
-`pre-commit` is a dev dependency (`requirements.txt`) and `.pre-commit-config.yaml`
-mirrors `scripts/lint` (ruff format, ruff check, mypy). Install once per
-clone:
+`pre-commit` is a dev dependency (declared in `pyproject.toml`) and
+`.pre-commit-config.yaml` mirrors the direct lint commands (ruff format,
+ruff check, mypy). Install once per clone:
 
 ```bash
 pre-commit install
 ```
 
 The hook runs the same gates as CI on every commit. Skip it only on
-emergency `git commit --no-verify` and immediately re-run `scripts/lint`.
+emergency `git commit --no-verify` and immediately re-run the lint commands
+(`uv run ruff format .`, `uv run ruff check . --fix`,
+`uv run mypy custom_components/metro_sp`).
 
 ## Conventional commits
 
@@ -233,11 +236,12 @@ which `release-please` parses to bump the version and generate `CHANGELOG.md`:
 
 ## Linting and verification
 
-- Ruff configuration lives in `.ruff.toml` with `select = ["ALL"]`.
-- Mypy configuration lives in `mypy.ini`. Both run from `scripts/lint`.
-- After every change run `scripts/lint && pytest`. Both gates mirror CI
-  (`.github/workflows/lint.yml` + `tests.yml`).
+- Ruff configuration lives in `pyproject.toml` (`[tool.ruff]`) with `select = ["ALL"]`.
+- Mypy configuration lives in `pyproject.toml` (`[tool.mypy]`). Run both directly
+  via `uv run ruff check .` and `uv run mypy custom_components/metro_sp`.
+- After every change run `uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_components/metro_sp && uv run pytest`.
+  Both gates mirror CI.
 - Tests live in `tests/`, mirroring the production layout. The 95 % coverage
-  gate (`pytest.ini`) prevents untested code from sneaking in. When a test
+  gate (`[tool.pytest.ini_options]` in `pyproject.toml`) prevents untested code from sneaking in. When a test
   exercises a state that is impossible under the new types, update or remove
   it — never weaken the type to satisfy the test.
