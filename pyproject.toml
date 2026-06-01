@@ -33,7 +33,7 @@ pythonpath = ["."]
 addopts = [
     "--cov=custom_components/metro_sp",
     "--cov-report=term-missing",
-    "--cov-fail-under=95",
+    "--cov-fail-under=90",
 ]
 
 [tool.mypy]

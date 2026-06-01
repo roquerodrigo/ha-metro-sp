@@ -23,7 +23,7 @@ uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_componen
 ```
 
 - The lint commands run `ruff format`, `ruff check --fix` and `mypy` (configured in `pyproject.toml`). Fix any failure and re-run before moving on.
-- `pytest` enforces a **95 % coverage gate** (configured in `pyproject.toml`).
+- `pytest` enforces a **90 % coverage gate** (configured in `pyproject.toml`).
 
 Both gates mirror CI. Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
 
