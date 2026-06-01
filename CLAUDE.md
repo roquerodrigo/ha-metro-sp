@@ -19,17 +19,17 @@ This file deliberately avoids restating those rules — it only adds:
 **After every code change, always run lint then tests, in that order, before declaring the task done:**
 
 ```bash
-scripts/lint && pytest
+uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_components/metro_sp && uv run pytest
 ```
 
-- `scripts/lint` runs `ruff format`, `ruff check --fix` and `mypy` (`mypy.ini`). Fix any failure and re-run before moving on.
-- `pytest` enforces a **95 % coverage gate** (`pytest.ini`).
+- The lint commands run `ruff format`, `ruff check --fix` and `mypy` (configured in `pyproject.toml`). Fix any failure and re-run before moving on.
+- `pytest` enforces a **95 % coverage gate** (configured in `pyproject.toml`).
 
-Both gates mirror CI (`.github/workflows/lint.yml`). Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
+Both gates mirror CI. Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
 
 ## Local development
 
-- `scripts/setup` installs `requirements.txt` + `requirements_test.txt`.
+- `uv sync` installs the dependencies declared in `pyproject.toml` (`uv.lock`).
 - `scripts/develop` starts Home Assistant in debug mode with the integration loaded. Config lives in `config/`; `PYTHONPATH` points at `custom_components/`. No symlinks needed.
 - When restarting HA during development, clear the registry so entity/device IDs are recreated with current values:
 
