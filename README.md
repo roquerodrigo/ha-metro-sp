@@ -20,13 +20,13 @@ das linhas do Metrô SP e CPTM.
 | 4     | Amarela   | ViaQuatro     |
 | 5     | Lilás     | ViaMobilidade |
 | 6     | Laranja   | Linha Uni     |
-| 7     | Rubi      | CPTM          |
+| 7     | Rubi      | TIC Trens     |
 | 8     | Diamante  | ViaMobilidade |
 | 9     | Esmeralda | ViaMobilidade |
 | 10    | Turquesa  | CPTM          |
-| 11    | Coral     | CPTM          |
-| 12    | Safira    | CPTM          |
-| 13    | Jade      | CPTM          |
+| 11    | Coral     | Trivia Trens  |
+| 12    | Safira    | Trivia Trens  |
+| 13    | Jade      | Trivia Trens  |
 | 15    | Prata     | Metrô SP      |
 | 17    | Ouro      | ViaMobilidade |
 
