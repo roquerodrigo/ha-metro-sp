@@ -19,6 +19,7 @@ das linhas do Metrô SP e CPTM.
 | 3     | Vermelha  | Metrô SP      |
 | 4     | Amarela   | ViaQuatro     |
 | 5     | Lilás     | ViaMobilidade |
+| 6     | Laranja   | Linha Uni     |
 | 7     | Rubi      | CPTM          |
 | 8     | Diamante  | ViaMobilidade |
 | 9     | Esmeralda | ViaMobilidade |
