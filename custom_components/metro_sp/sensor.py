@@ -30,6 +30,7 @@ _LINE_OPERATORS: dict[int, str] = {
     3: "Metrô SP",
     4: "ViaQuatro",
     5: "ViaMobilidade",
+    6: "Linha Uni",
     7: "CPTM",
     8: "ViaMobilidade",
     9: "ViaMobilidade",
