@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.0.2...v2.1.0) (2026-07-09)
+
+
+### Features
+
+* add Line 6-Laranja support ahead of API rollout ([2395abc](https://github.com/roquerodrigo/ha-metro-sp/commit/2395abce5cebe7cdf896afc5b91cb510c38b6d12))
+* add Line 6-Laranja support ahead of API rollout ([0be3bec](https://github.com/roquerodrigo/ha-metro-sp/commit/0be3beceba87495f424a4333692a12c9b64ebd7a))
+
+
+### Bug Fixes
+
+* correct operators for recently conceded CPTM lines ([45a6da4](https://github.com/roquerodrigo/ha-metro-sp/commit/45a6da4a7d5f2e3256b5d6e4632a4125c65569b3))
+* correct operators for recently conceded CPTM lines ([045106c](https://github.com/roquerodrigo/ha-metro-sp/commit/045106cd79f4348a67a74e4be4943495dc5efb0b))
+
 ## [2.0.2](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.0.1...v2.0.2) (2026-05-25)
 
 
