@@ -62,9 +62,16 @@ def mock_api_client(sample_lines: list[dict]) -> Generator:
 
 @pytest.fixture
 async def setup_integration(hass, mock_api_client, enable_custom_integrations):
+    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL, UrlManager
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     from custom_components.metro_sp.const import DOMAIN
+
+    # metro_sp declares `frontend` as a dependency and auto-registers its
+    # Lovelace card via add_extra_js_url. The full frontend component can't be
+    # set up in this minimal harness, so seed just the store add_extra_js_url
+    # writes to (frontend itself does the same at setup).
+    hass.data.setdefault(DATA_EXTRA_MODULE_URL, UrlManager(lambda *_: None, []))
 
     entry = MockConfigEntry(domain=DOMAIN, data={})
     entry.add_to_hass(hass)

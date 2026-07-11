@@ -1,6 +1,9 @@
 {
   "domain": "metro_sp",
   "name": "Metrô SP",
+  "after_dependencies": [
+    "frontend"
+  ],
   "codeowners": [
     "@roquerodrigo"
   ],
