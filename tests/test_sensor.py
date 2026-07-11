@@ -127,8 +127,10 @@ def test_device_info_includes_entry_id_and_line_code():
     assert any("eid_4" in str(i) for i in info["identifiers"])
 
 
-def test_device_info_name_uses_color_titlecased():
-    sensor = _sensor(_line(code=3, color_name="vermelha"))
+def test_device_info_name_uses_color_name():
+    # ColorName is normalized upstream by the coordinator; the sensor uses it
+    # verbatim to build the device name.
+    sensor = _sensor(_line(code=3, color_name="Vermelha"))
     assert sensor.device_info["name"] == "Linha 3 - Vermelha"
 
 

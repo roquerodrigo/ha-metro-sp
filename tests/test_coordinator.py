@@ -52,6 +52,14 @@ async def test_update_data_returns_full_line_dict(hass, sample_lines):
     assert result[1]["ColorHex"] == "#0455A1"
 
 
+async def test_update_data_normalizes_uppercase_color_name(hass, sample_lines):
+    # CPTM lines come back with ColorName in all caps; it must be title-cased.
+    sample_lines[0]["ColorName"] = "DIAMANTE"
+    coord, _ = _make_coordinator(hass, lines=sample_lines)
+    result = await coord._async_update_data()
+    assert result[1]["ColorName"] == "Diamante"
+
+
 async def test_update_data_empty_lines(hass):
     coord, _ = _make_coordinator(hass, lines=[])
     assert await coord._async_update_data() == {}
