@@ -33,6 +33,13 @@ async def test_setup_entry_registers_update_listener(hass, setup_integration):
     assert len(setup_integration.update_listeners) == 1
 
 
+async def test_setup_entry_registers_bundled_card(hass, setup_integration):
+    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL
+
+    urls = hass.data[DATA_EXTRA_MODULE_URL].urls
+    assert any(u.startswith("/metro_sp/metro-card.js?v=") for u in urls)
+
+
 async def test_unload_entry_succeeds(hass, setup_integration):
     assert await hass.config_entries.async_unload(setup_integration.entry_id)
     assert setup_integration.state == ConfigEntryState.NOT_LOADED
