@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.1.0...v2.2.0) (2026-07-11)
+
+
+### Features
+
+* add a built-in Lovelace card for the Metrô SP lines ([c47fb47](https://github.com/roquerodrigo/ha-metro-sp/commit/c47fb4791191a95ece951b791a3d4b8f876d5e11))
+
+
+### Bug Fixes
+
+* title-case CPTM line color names ([114a53c](https://github.com/roquerodrigo/ha-metro-sp/commit/114a53c6b2cb6acb07c0e4e2040628cb6869fcdf))
+
 ## [2.1.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.0.2...v2.1.0) (2026-07-09)
 
 
