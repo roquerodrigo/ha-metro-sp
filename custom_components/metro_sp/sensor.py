@@ -90,7 +90,8 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
     def device_info(self) -> DeviceInfo:
         """Return per-line device info; manufacturer is operator-mapped."""
         line = self._line_data
-        line_name = f"Linha {line['Code']} - {line['ColorName'].title()}"
+        # ColorName is already normalized (title-cased) by the coordinator.
+        line_name = f"Linha {line['Code']} - {line['ColorName']}"
         entry_id = self.coordinator.config_entry.entry_id
         return DeviceInfo(
             identifiers={(DOMAIN, f"{entry_id}_{self._line_code}")},

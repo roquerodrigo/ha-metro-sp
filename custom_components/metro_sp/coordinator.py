@@ -22,6 +22,17 @@ UPDATE_INTERVAL = timedelta(minutes=5)
 FAILURE_GRACE_PERIOD = timedelta(minutes=5)
 
 
+def _normalize_line(line: MetroSPLine) -> MetroSPLine:
+    """
+    Normalize upstream fields so consumers see consistent values.
+
+    CPTM lines come back with ``ColorName`` in all caps (e.g. ``DIAMANTE``)
+    while Metrô lines are title-cased (``Azul``). Title-case it once here so
+    the whole integration — attributes, device names, cards — is consistent.
+    """
+    return {**line, "ColorName": line["ColorName"].title()}
+
+
 class MetroSPDataUpdateCoordinator(DataUpdateCoordinator["dict[int, MetroSPLine]"]):
     """Coordinator for fetching Metrô SP line data."""
 
@@ -45,7 +56,7 @@ class MetroSPDataUpdateCoordinator(DataUpdateCoordinator["dict[int, MetroSPLine]
             return self._handle_failure(exception)
 
         self._first_failure_at = None
-        return {line["Code"]: line for line in lines}
+        return {line["Code"]: _normalize_line(line) for line in lines}
 
     def _handle_failure(
         self, exception: MetroSPApiClientError
