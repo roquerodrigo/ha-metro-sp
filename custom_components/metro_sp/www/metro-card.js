@@ -386,17 +386,24 @@ class MetroCardEditor extends HTMLElement {
   }
 }
 
-customElements.define("metro-card", MetroCard);
-customElements.define("metro-card-editor", MetroCardEditor);
+// The module runs once per URL it is served from, and the card URL carries the
+// integration version. Upgrading the integration without restarting Home
+// Assistant leaves the previous version's URL registered alongside the new one,
+// so the module is evaluated twice. Without this guard the second run throws on
+// the already-taken tag name and registers a duplicate card picker entry.
+if (!customElements.get("metro-card")) {
+  customElements.define("metro-card", MetroCard);
+  customElements.define("metro-card-editor", MetroCardEditor);
 
-window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "metro-card",
-  name: "Metrô SP Card",
-  description: "Lists the Metrô SP / CPTM lines and their operation status.",
-  preview: true,
-  documentationURL: "https://github.com/roquerodrigo/ha-metro-sp",
-});
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: "metro-card",
+    name: "Metrô SP Card",
+    description: "Lists the Metrô SP / CPTM lines and their operation status.",
+    preview: true,
+    documentationURL: "https://github.com/roquerodrigo/ha-metro-sp",
+  });
 
-// eslint-disable-next-line no-console
-console.info("%c metro-card ", "background:#0455A1;color:#fff;border-radius:3px", "loaded");
+  // eslint-disable-next-line no-console
+  console.info("%c metro-card ", "background:#0455A1;color:#fff;border-radius:3px", "loaded");
+}
