@@ -14,5 +14,5 @@
   "documentation": "https://github.com/roquerodrigo/ha-metro-sp",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/roquerodrigo/ha-metro-sp/issues",
-  "version": "2.2.0"
+  "version": "2.2.1"
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.0...v2.2.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* guard against duplicate custom element registration ([44d96d9](https://github.com/roquerodrigo/ha-metro-sp/commit/44d96d92a31d8fc7139e62f07b3357a5b6a277c7))
+
+
+### Dependencies
+
+* **deps:** bump pip from 26.1.1 to 26.1.2 ([f91a3df](https://github.com/roquerodrigo/ha-metro-sp/commit/f91a3df075083ad97861e1bb3e4fb25288795ee8))
+
 ## [2.2.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.1.0...v2.2.0) (2026-07-11)
 
 
