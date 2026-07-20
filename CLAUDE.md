@@ -37,7 +37,7 @@ Both gates mirror CI. Skip this only when the change literally cannot affect lin
   rm config/.storage/core.entity_registry config/.storage/core.device_registry
   ```
 
-- macOS Bluetooth causes intermittent crashes (PyObjC/CoreBluetooth race, exit 134). Unrelated to this integration. `config/configuration.yaml` already sets `bluetooth: passive_scanning: false` as mitigation.
+- macOS Bluetooth causes intermittent crashes (PyObjC/CoreBluetooth race, exit 134). Unrelated to this integration. If it hits you, add `bluetooth: passive_scanning: false` to `config/configuration.yaml` as a mitigation.
 
 ## Architecture
 
@@ -46,8 +46,12 @@ The integration follows the HA `DataUpdateCoordinator` pattern:
 ```
 config_flow.py   → tests connectivity and creates the ConfigEntry (no credentials)
 __init__.py      → instantiates ApiClient + DataUpdateCoordinator, performs the first refresh,
-                   registers the per-line static images under STATIC_URL_PREFIX
-coordinator.py   → polls every UPDATE_INTERVAL (5 min); returns dict[int, MetroSPLine] keyed by line Code
+                   registers the whole www/ dir as static files under STATIC_URL_PREFIX
+                   (per-line images + the bundled metro-card.js), and auto-registers the
+                   card as a frontend JS module via add_extra_js_url
+coordinator.py   → polls every UPDATE_INTERVAL (5 min); returns dict[int, MetroSPLine] keyed by line Code;
+                   tolerates API failures for FAILURE_GRACE_PERIOD (5 min), returning stale data instead
+                   of marking entities unavailable — only raises UpdateFailed once the grace period elapses
 sensor.py        → reads coordinator.data and creates one sensor per line (operacao);
                    the incident text is exposed via the ``description`` state attribute
 ```
@@ -80,6 +84,18 @@ Each line becomes an independent **device** with `manufacturer` mapped per opera
 Because each line is its own device, `device_info` lives as a `@property` on `MetroSPLineSensor`, **not** on the `MetroSPEntity` base. The base only carries integration-wide attributes (`_attr_attribution`, `_attr_has_entity_name`).
 
 The `entity_id` is suggested explicitly in the constructor via `self.entity_id = "sensor.{base_id}_operacao"`, which HA records as `suggested_object_id` in the registry on first creation.
+
+### Bundled Lovelace card
+
+`custom_components/metro_sp/www/metro-card.js` ships a zero-build vanilla web
+component (`custom:metro-card`, no Lit/bundler) that lists the integration's
+line sensors with their status. `__init__.py` serves it from the same static
+dir as the line images and registers it as a frontend module automatically
+(`add_extra_js_url`, versioned with `?v={integration.version}` to bust the
+browser cache on release) — users never add a dashboard resource by hand.
+Styling uses HA design tokens (theme/light/dark follow automatically); i18n
+strings (`en`, `pt-BR`) are embedded in the file itself since this is a pure
+frontend plugin with no access to `custom_components` translations.
 
 ### Diagnostics
 
