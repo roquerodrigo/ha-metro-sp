@@ -34,9 +34,9 @@ async def test_setup_entry_registers_update_listener(hass, setup_integration):
 
 
 async def test_setup_entry_registers_bundled_card(hass, setup_integration):
-    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL
+    from homeassistant.components.lovelace import LOVELACE_DATA
 
-    urls = hass.data[DATA_EXTRA_MODULE_URL].urls
+    urls = [item["url"] for item in hass.data[LOVELACE_DATA].resources.async_items()]
     assert any(u.startswith("/metro_sp/metro-card.js?v=") for u in urls)
 
 
