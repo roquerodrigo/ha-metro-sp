@@ -1,5 +1,40 @@
 # Changelog
 
+## [2.2.2](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.1...v2.2.2) (2026-08-05)
+
+
+### Bug Fixes
+
+* register the bundled card as a Lovelace dashboard resource ([f16e82c](https://github.com/roquerodrigo/ha-metro-sp/commit/f16e82c8328ec458e1f9e0cafed47daadd627398))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump pre-commit ([2704b52](https://github.com/roquerodrigo/ha-metro-sp/commit/2704b527a7f8f09cc8bc7b7a4e333b4aeeaa8af3))
+* **deps-dev:** bump ruff ([a918d24](https://github.com/roquerodrigo/ha-metro-sp/commit/a918d24c0316e9f737c2c1800f8e1a03a1ad958f))
+* **deps-dev:** bump ruff in the python-development group ([0b2225f](https://github.com/roquerodrigo/ha-metro-sp/commit/0b2225f7827e0a68c7b2a3e5970ec4e95ce9db02))
+
+
+### Documentation
+
+* update CLAUDE.md ([2515d6a](https://github.com/roquerodrigo/ha-metro-sp/commit/2515d6aca33fc451f3f597f4247119666bc4887a))
+
+
+### Continuous Integration
+
+* assign open issues and pull requests to the repository owner ([513608f](https://github.com/roquerodrigo/ha-metro-sp/commit/513608fa97599d684a19f268149b5cc0ac5476f5))
+* call the shared auto-assign workflow instead of duplicating it ([210789d](https://github.com/roquerodrigo/ha-metro-sp/commit/210789dbb545edf8918260db4dfe1973e343003b))
+* drop the auto-assign job now handled by its own workflow ([ae6f942](https://github.com/roquerodrigo/ha-metro-sp/commit/ae6f942f3d865b63d19a76cf942e07e64e77dc89))
+* drop the blank line left by the removed job ([c2be03d](https://github.com/roquerodrigo/ha-metro-sp/commit/c2be03dc5fd24d33155ca69d2c46495743af8d6e))
+* split the CI workflow into one file per concern ([9326ea0](https://github.com/roquerodrigo/ha-metro-sp/commit/9326ea0f157468f6ed5b95c9b54ab65e52513c54))
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump ruff to 0.16.0 ([2d6b821](https://github.com/roquerodrigo/ha-metro-sp/commit/2d6b8212457980e279be780d6d59936845456e2e))
+* move CI to the shared workflows repository ([351a336](https://github.com/roquerodrigo/ha-metro-sp/commit/351a336a083214cb6b9fcde1f6d5d8c71b75b69b))
+* release on every conventional commit type ([77f0036](https://github.com/roquerodrigo/ha-metro-sp/commit/77f0036c0da9509f7ac22c0983366b3604a80e33))
+
 ## [2.2.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.0...v2.2.1) (2026-07-15)
 
 
