@@ -17,10 +17,16 @@ Style conventions for the `ha-metro-sp` project. Before committing, run
 - The conversation language with the user can be Portuguese or anything else;
   what is committed to disk stays English (with the API-payload exception
   above and the user-facing pt-BR translations).
-- User-facing strings live in `custom_components/metro_sp/translations/{en,pt-BR}.json`
-  only — never hardcoded in Python. Strings HA cannot translate (`ATTRIBUTION`,
-  device names such as `Line 1 - Azul`) are English; line color names inside
-  them come verbatim from the API payload.
+- User-facing strings belong in
+  `custom_components/metro_sp/translations/{en,pt-BR}.json` whenever Home
+  Assistant can translate them, which is why `_attr_translation_key` stays
+  English (`operation`) while the rendered name differs per language.
+- **The few user-facing strings Home Assistant cannot translate are pt-BR**:
+  `ATTRIBUTION` and the per-line device name (`Linha 1 - Azul`). There is no
+  translation mechanism for either, so they are rendered verbatim to every
+  user — and every user of this integration is looking at the São Paulo
+  network. English there would be a worse default, not a neutral one. Line
+  color names inside them come verbatim from the API payload.
 - Entity ids keep their historical pt-BR slugs
   (`sensor.metro_sp_linha_{N}_{cor}_operacao`) — they are registry state on
   users' installs, not code, and renaming them would break existing dashboards.
