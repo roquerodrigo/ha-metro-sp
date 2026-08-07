@@ -48,12 +48,22 @@ async def async_setup_entry(
     entry: MetroSPConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up one sensor per line returned by the API."""
+    """Set up one sensor per line, adding sensors for lines that appear later."""
     coordinator = entry.runtime_data.coordinator
-    async_add_entities(
-        MetroSPLineSensor(coordinator=coordinator, line_code=code)
-        for code in coordinator.data
-    )
+    known_line_codes: set[int] = set()
+
+    def _async_add_new_line_sensors() -> None:
+        new_line_codes = set(coordinator.data) - known_line_codes
+        if not new_line_codes:
+            return
+        known_line_codes.update(new_line_codes)
+        async_add_entities(
+            MetroSPLineSensor(coordinator=coordinator, line_code=code)
+            for code in new_line_codes
+        )
+
+    _async_add_new_line_sensors()
+    entry.async_on_unload(coordinator.async_add_listener(_async_add_new_line_sensors))
 
 
 class MetroSPLineSensor(MetroSPEntity, SensorEntity):
@@ -82,9 +92,15 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
         return self.coordinator.data[self._line_code]
 
     @property
+    def available(self) -> bool:
+        """Report unavailable while the upstream API stops listing this line."""
+        return super().available and self._line_code in self.coordinator.data
+
+    @property
     def unique_id(self) -> str:
-        """Return the unique id derived from the line's base id."""
-        return f"sensor.{self._base_id}_operacao"
+        """Return the unique id derived from the entry and the line code."""
+        entry_id = self.coordinator.config_entry.entry_id
+        return f"{entry_id}_{self._line_code}_operation"
 
     @property
     def device_info(self) -> DeviceInfo:
