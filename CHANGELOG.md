@@ -1,5 +1,39 @@
 # Changelog
 
+## [2.2.3](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.2...v2.2.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* render the untranslatable user-facing strings in pt-BR ([972c233](https://github.com/roquerodrigo/ha-metro-sp/commit/972c2339b1eb394ee1a1183776e12d893fab9f89))
+* **sensor:** track upstream line list changes safely ([c4aa6b9](https://github.com/roquerodrigo/ha-metro-sp/commit/c4aa6b96455ee594ad267cfbee9e116e7b28159d))
+
+
+### Code Refactoring
+
+* anglicize code-level strings and drop the unused repairs scaffold ([062fcc3](https://github.com/roquerodrigo/ha-metro-sp/commit/062fcc358d785a8acd9dee70d0121c74a92f25e0))
+
+
+### Dependencies
+
+* bump Home Assistant to 2026.8.0 ([5ddf077](https://github.com/roquerodrigo/ha-metro-sp/commit/5ddf077fa78314b34be9a9fd8be3644962e81688))
+
+
+### Documentation
+
+* describe the code as it actually is ([f6c3690](https://github.com/roquerodrigo/ha-metro-sp/commit/f6c3690bad672ddce7bb4db8f162a8a1614208fe))
+
+
+### Continuous Integration
+
+* run checks on pull requests targeting any branch ([51b2fcb](https://github.com/roquerodrigo/ha-metro-sp/commit/51b2fcb9cc0a345f927b5545bb2a9d84b00cd9ab))
+* run code scanning on pull requests targeting any branch ([1e79495](https://github.com/roquerodrigo/ha-metro-sp/commit/1e794952efc10a9fff92e297e09cbdc059e79f11))
+
+
+### Miscellaneous Chores
+
+* repair dev tooling drift ([259e56a](https://github.com/roquerodrigo/ha-metro-sp/commit/259e56a61d8c35f4ad9331fda1ad19d5c3797020))
+
 ## [2.2.2](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.1...v2.2.2) (2026-08-05)
 
 
