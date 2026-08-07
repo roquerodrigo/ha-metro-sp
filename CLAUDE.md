@@ -110,6 +110,6 @@ There is deliberately no `repairs.py`: the integration has no recoverable condit
 
 ## Language
 
-Everything committed to code is English — identifiers, `ATTRIBUTION`, device names, translation keys (`operation`), commit messages. User-facing pt-BR strings live only in `translations/pt-BR.json`.
+Code is English — identifiers, translation keys (`operation`), log and error messages, docstrings, commit messages. Translatable user-facing strings live in `translations/{en,pt-BR}.json`.
 
-**Documented exception: `README.md` is written in pt-BR.** The integration serves the São Paulo metro network and its audience is Brazilian; keep the README in pt-BR and do not "fix" it to English.
+**Anything user-facing that Home Assistant cannot translate is pt-BR**, not English: `ATTRIBUTION` and the per-line device name (`Linha 1 - Azul`). Neither has a translation mechanism, so whatever is hardcoded is what every user reads — and this integration only ever serves the São Paulo network. The same reasoning keeps `README.md` in pt-BR. Do not "fix" any of these to English.
