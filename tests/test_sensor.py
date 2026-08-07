@@ -42,6 +42,64 @@ async def test_sensor_count(hass, setup_integration):
     assert len(hass.states.async_all("sensor")) == 2
 
 
+async def test_sensor_unavailable_when_line_disappears_upstream(
+    hass, setup_integration, mock_api_client, sample_lines
+):
+    mock_api_client.async_get_lines.return_value = [sample_lines[0]]
+    await setup_integration.runtime_data.coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert (
+        hass.states.get("sensor.metro_sp_linha_3_vermelha_operacao").state
+        == "unavailable"
+    )
+    assert (
+        hass.states.get("sensor.metro_sp_linha_1_azul_operacao").state
+        == "Operação Normal"
+    )
+
+
+async def test_sensor_recovers_when_line_reappears_upstream(
+    hass, setup_integration, mock_api_client, sample_lines
+):
+    coordinator = setup_integration.runtime_data.coordinator
+    mock_api_client.async_get_lines.return_value = [sample_lines[0]]
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    mock_api_client.async_get_lines.return_value = sample_lines
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert (
+        hass.states.get("sensor.metro_sp_linha_3_vermelha_operacao").state
+        == "Velocidade Reduzida"
+    )
+
+
+async def test_sensor_added_when_new_line_appears_upstream(
+    hass, setup_integration, mock_api_client, sample_lines
+):
+    new_line = {
+        "Code": 4,
+        "ColorName": "Amarela",
+        "ColorHex": "#FFF000",
+        "Line": "4",
+        "StatusCode": 1,
+        "StatusLabel": "Operação Normal",
+        "StatusColor": "#00FF00",
+        "Description": "",
+    }
+    mock_api_client.async_get_lines.return_value = [*sample_lines, new_line]
+    await setup_integration.runtime_data.coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    state = hass.states.get("sensor.metro_sp_linha_4_amarela_operacao")
+    assert state is not None
+    assert state.state == "Operação Normal"
+    assert len(hass.states.async_all("sensor")) == 3
+
+
 async def test_operacao_state_value(hass, setup_integration):
     assert (
         hass.states.get("sensor.metro_sp_linha_1_azul_operacao").state
@@ -84,6 +142,30 @@ async def test_operacao_attributes_values(hass, setup_integration):
 
 def test_entity_picture_points_to_local_static_file():
     assert _sensor(_line(code=4)).entity_picture == "/metro_sp/linha_4.png"
+
+
+def test_unique_id_scoped_to_entry_and_line_code():
+    assert _sensor(_line(code=4)).unique_id == "eid_4_operation"
+
+
+def test_unique_id_does_not_change_when_color_name_changes():
+    sensor = _sensor(_line(code=1, color_name="Azul"))
+    before = sensor.unique_id
+    sensor.coordinator.data[1]["ColorName"] = "Turquesa"
+    assert sensor.unique_id == before
+
+
+def test_available_false_when_line_missing_from_coordinator_data():
+    sensor = _sensor(_line(code=1))
+    sensor.coordinator.last_update_success = True
+    del sensor.coordinator.data[1]
+    assert sensor.available is False
+
+
+def test_available_true_when_line_present():
+    sensor = _sensor(_line(code=1))
+    sensor.coordinator.last_update_success = True
+    assert sensor.available is True
 
 
 def test_icon_is_mdi_subway():

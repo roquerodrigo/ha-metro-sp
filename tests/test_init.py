@@ -40,6 +40,44 @@ async def test_setup_entry_registers_bundled_card(hass, setup_integration):
     assert any(u.startswith("/metro_sp/metro-card.js?v=") for u in urls)
 
 
+async def test_setup_entry_migrates_legacy_unique_id(
+    hass, mock_api_client, enable_custom_integrations
+):
+    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL, UrlManager
+    from homeassistant.helpers import entity_registry as er
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.metro_sp.const import DOMAIN
+
+    hass.data.setdefault(DATA_EXTRA_MODULE_URL, UrlManager(lambda *_: None, []))
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    legacy = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        "sensor.metro_sp_linha_1_azul_operacao",
+        config_entry=entry,
+        suggested_object_id="metro_sp_linha_1_azul_operacao",
+    )
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    migrated = registry.async_get(legacy.entity_id)
+    assert migrated is not None
+    assert migrated.unique_id == f"{entry.entry_id}_1_operation"
+
+
+async def test_setup_entry_registers_entry_scoped_unique_id(hass, setup_integration):
+    from homeassistant.helpers import entity_registry as er
+
+    registry = er.async_get(hass)
+    entity = registry.async_get("sensor.metro_sp_linha_1_azul_operacao")
+    assert entity is not None
+    assert entity.unique_id == f"{setup_integration.entry_id}_1_operation"
+
+
 async def test_unload_entry_succeeds(hass, setup_integration):
     assert await hass.config_entries.async_unload(setup_integration.entry_id)
     assert setup_integration.state == ConfigEntryState.NOT_LOADED
