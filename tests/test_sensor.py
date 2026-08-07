@@ -131,7 +131,7 @@ def test_device_info_name_uses_color_name():
     # ColorName is normalized upstream by the coordinator; the sensor uses it
     # verbatim to build the device name.
     sensor = _sensor(_line(code=3, color_name="Vermelha"))
-    assert sensor.device_info["name"] == "Linha 3 - Vermelha"
+    assert sensor.device_info["name"] == "Line 3 - Vermelha"
 
 
 @pytest.mark.parametrize(
