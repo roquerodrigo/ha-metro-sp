@@ -52,6 +52,6 @@ class MetroSPApiClient:
             raise MetroSPApiClientCommunicationError(msg) from exception
         except MetroSPApiClientError:
             raise
-        except Exception as exception:  # pylint: disable=broad-except
-            msg = f"Something really wrong happened! - {exception}"
+        except Exception as exception:
+            msg = f"Failed to fetch information from the Metrô SP API: {exception}"
             raise MetroSPApiClientError(msg) from exception

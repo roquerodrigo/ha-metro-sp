@@ -44,10 +44,10 @@ class MetroSPFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             await self._test_connectivity()
         except MetroSPApiClientCommunicationError as exception:
-            LOGGER.error(exception)
+            LOGGER.error("Failed to connect to the Metrô SP API: %s", exception)
             return {"base": "connection"}
-        except MetroSPApiClientError as exception:
-            LOGGER.exception(exception)
+        except MetroSPApiClientError:
+            LOGGER.exception("Failed to validate the Metrô SP API")
             return {"base": "unknown"}
         return {}
 

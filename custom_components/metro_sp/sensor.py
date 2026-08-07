@@ -59,7 +59,7 @@ async def async_setup_entry(
 class MetroSPLineSensor(MetroSPEntity, SensorEntity):
     """Sensor for a single Metrô SP / CPTM line."""
 
-    _attr_translation_key = "operacao"
+    _attr_translation_key = "operation"
     _attr_icon = "mdi:subway"
 
     def __init__(
@@ -91,7 +91,7 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
         """Return per-line device info; manufacturer is operator-mapped."""
         line = self._line_data
         # ColorName is already normalized (title-cased) by the coordinator.
-        line_name = f"Linha {line['Code']} - {line['ColorName']}"
+        line_name = f"Line {line['Code']} - {line['ColorName']}"
         entry_id = self.coordinator.config_entry.entry_id
         return DeviceInfo(
             identifiers={(DOMAIN, f"{entry_id}_{self._line_code}")},

@@ -98,7 +98,7 @@ async def test_api_wrapper_socket_error_raises_communication_error():
 
 async def test_api_wrapper_unexpected_exception_raises_api_error():
     session, _ = _make_session(side_effect=RuntimeError("boom"))
-    with pytest.raises(MetroSPApiClientError, match="Something really wrong"):
+    with pytest.raises(MetroSPApiClientError, match="Failed to fetch information"):
         await MetroSPApiClient(session=session)._api_wrapper(
             method="get", url="http://x"
         )
