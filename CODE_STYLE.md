@@ -18,7 +18,13 @@ Style conventions for the `ha-metro-sp` project. Before committing, run
   what is committed to disk stays English (with the API-payload exception
   above and the user-facing pt-BR translations).
 - User-facing strings live in `custom_components/metro_sp/translations/{en,pt-BR}.json`
-  only — never hardcoded in Python.
+  only — never hardcoded in Python. Strings HA cannot translate (`ATTRIBUTION`,
+  device names such as `Line 1 - Azul`) are English; line color names inside
+  them come verbatim from the API payload.
+- Entity ids keep their historical pt-BR slugs
+  (`sensor.metro_sp_linha_{N}_{cor}_operacao`) — they are registry state on
+  users' installs, not code, and renaming them would break existing dashboards.
+- `README.md` is the one pt-BR document (see `CLAUDE.md` for the rationale).
 
 ## File organization
 
@@ -34,8 +40,8 @@ Style conventions for the `ha-metro-sp` project. Before committing, run
 - **Helper functions** may live in the same file as the single class that uses
   them (e.g. `_verify_response_or_raise` in `api.py`).
 - **`__init__.py` of the integration package** wires `async_setup_entry`,
-  `async_unload_entry`, `async_reload_entry` (plus the static-www registration
-  the integration needs) and nothing else.
+  `async_unload_entry`, `async_reload_entry` (delegating card/static-file
+  registration to `MetroSPCardRegistration`) and nothing else.
 
 ## Entities: one class per entity
 
@@ -170,22 +176,23 @@ explaining the deliberate narrowing.
 
 - All API state flows through `entry.runtime_data: MetroSPData`
   (`data.py`). Never store integration state in `hass.data` (the only
-  exception in this repo is the static-path registration sentinel
-  `_STATIC_REGISTERED_KEY`, which is per-`hass`, not per-entry).
+  exceptions in this repo are the registration sentinels in
+  `card_registration.py` — `_STATIC_PATH_REGISTERED_KEY` and
+  `_EXTRA_MODULE_REGISTERED_KEY` — which are per-`hass`, not per-entry).
 - The coordinator is typed as `DataUpdateCoordinator[dict[int, MetroSPLine]]`,
   keyed by line `Code`. `_async_update_data` returns the typed payload;
   client errors map to `UpdateFailed`.
 - The Metrô SP API is unauthenticated, so no `ConfigEntryAuthFailed` /
   reauth flow exists. Do not add one unless the upstream API gains auth.
 
-## Config / repairs / diagnostics
+## Config / diagnostics
 
 - `config_flow.py` carries a single `async_step_user` step backed by a
   `_validate` helper. The API has no credentials, so there is no reauth /
   reconfigure / options flow. Keep it that way until the API contract changes.
-- `repairs.py` exposes `async_create_fix_flow`. Sample helpers like
-  `async_raise_deprecated_api_issue` show how to register issues from anywhere
-  in the integration.
+- There is no `repairs.py` — the integration currently has no recoverable
+  condition to surface. Introduce the platform together with the first real
+  issue it raises, never as an unused scaffold.
 - `diagnostics.py` returns `MetroSPDiagnosticsPayload`. There are no secrets
   in `entry.data`, so `TO_REDACT` is currently empty — keep the
   `async_redact_data` plumbing in place so adding a redacted key later is a
@@ -195,14 +202,16 @@ explaining the deliberate narrowing.
 
 - Two locales: `en.json` and `pt-BR.json`. `tests/test_translations.py`
   parametrizes over every locale and fails if their nested key sets diverge.
-- Issue strings live under `issues.<issue_id>`; flow strings under
-  `config.step.<step_id>`; entity names under `entity.sensor.<key>.name`.
+- Flow strings live under `config.step.<step_id>`; entity names under
+  `entity.sensor.<key>.name` (the sensor's translation key is `operation`).
 
 ## Pre-commit hooks
 
 `pre-commit` is a dev dependency (declared in `pyproject.toml`) and
-`.pre-commit-config.yaml` mirrors the direct lint commands (ruff format,
-ruff check, mypy). Install once per clone:
+`.pre-commit-config.yaml` runs the lint commands as **local `uv run` hooks**
+(ruff format, ruff check, mypy), so the hook always uses the exact tool
+versions pinned in `pyproject.toml` — no separate hook pin to drift. Install
+once per clone:
 
 ```bash
 pre-commit install
