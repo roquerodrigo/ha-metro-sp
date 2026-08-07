@@ -43,8 +43,8 @@ Cada linha gera um **device** independente com um sensor:
 | Atributo       | Descrição                                                                       |
 |----------------|---------------------------------------------------------------------------------|
 | `description`  | Descrição detalhada de ocorrências (ou o status quando não há texto específico) |
-| `status_code`  | Código do status (ex: `OperacaoNormal`)                                         |
-| `status_color` | Cor do status (`verde`, `amarelo`, `cinza`)                                     |
+| `status_code`  | Código numérico do status reportado pela API                                    |
+| `status_color` | Cor associada ao status, como reportada pela API                                |
 | `color_name`   | Nome da cor da linha                                                            |
 | `color_hex`    | Código hexadecimal da cor da linha                                              |
 | `line_code`    | Número da linha                                                                 |

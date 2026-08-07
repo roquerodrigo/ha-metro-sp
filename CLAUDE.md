@@ -4,7 +4,7 @@ Guidance for Claude Code (claude.ai/code) agents working in this repository.
 
 ## Always read `CODE_STYLE.md` first
 
-Before creating, renaming or restructuring any file/class/function, **read [`CODE_STYLE.md`](./CODE_STYLE.md)**. It is the single source of truth for conventions: language, file organisation, naming, typing, properties vs `__init__`, imports, docstrings, comments, coordinator pattern, repairs/diagnostics layout, translations, lint workflow.
+Before creating, renaming or restructuring any file/class/function, **read [`CODE_STYLE.md`](./CODE_STYLE.md)**. It is the single source of truth for conventions: language, file organisation, naming, typing, properties vs `__init__`, imports, docstrings, comments, coordinator pattern, diagnostics layout, translations, lint workflow.
 
 For user-facing topics (what's included, how to install, useful commands, CI list), see [`README.md`](./README.md).
 
@@ -44,23 +44,24 @@ Both gates mirror CI. Skip this only when the change literally cannot affect lin
 The integration follows the HA `DataUpdateCoordinator` pattern:
 
 ```
-config_flow.py   → tests connectivity and creates the ConfigEntry (no credentials)
-__init__.py      → instantiates ApiClient + DataUpdateCoordinator, performs the first refresh,
-                   registers the whole www/ dir as static files under STATIC_URL_PREFIX
-                   (per-line images + the bundled metro-card.js), and auto-registers the
-                   card as a frontend JS module via add_extra_js_url
-coordinator.py   → polls every UPDATE_INTERVAL (5 min); returns dict[int, MetroSPLine] keyed by line Code;
-                   tolerates API failures for FAILURE_GRACE_PERIOD (5 min), returning stale data instead
-                   of marking entities unavailable — only raises UpdateFailed once the grace period elapses
-sensor.py        → reads coordinator.data and creates one sensor per line (operacao);
-                   the incident text is exposed via the ``description`` state attribute
+config_flow.py        → tests connectivity and creates the ConfigEntry (no credentials)
+__init__.py           → instantiates ApiClient + DataUpdateCoordinator, performs the first refresh,
+                        and delegates card/static-file registration to MetroSPCardRegistration
+card_registration.py  → registers the whole www/ dir as static files under STATIC_URL_PREFIX
+                        (per-line images + the bundled metro-card.js) and keeps the card
+                        registered as a Lovelace dashboard resource
+coordinator.py        → polls every UPDATE_INTERVAL (5 min); returns dict[int, MetroSPLine] keyed by line Code;
+                        tolerates API failures for FAILURE_GRACE_PERIOD (5 min), returning stale data instead
+                        of marking entities unavailable — only raises UpdateFailed once the grace period elapses
+sensor.py             → reads coordinator.data and creates one sensor per line (translation key
+                        ``operation``); the incident text is exposed via the ``description`` state attribute
 ```
 
 ### Entry typing
 
 `data.py` defines `MetroSPConfigEntry = ConfigEntry[MetroSPData]` and the `MetroSPData(client, coordinator, integration)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
 
-The single `hass.data` entry is `_STATIC_REGISTERED_KEY` in `__init__.py` — a per-`hass` sentinel so we register the `/metro_sp` static path exactly once across reloads. It is *not* per-entry state.
+The only `hass.data` entries are the two sentinels in `card_registration.py` (`_STATIC_PATH_REGISTERED_KEY`, `_EXTRA_MODULE_REGISTERED_KEY`) — per-`hass` flags so the `/metro_sp` static path and the extra-module fallback are registered exactly once across reloads. They are *not* per-entry state.
 
 ### API and exceptions
 
@@ -77,7 +78,7 @@ Exceptions live under `exceptions/`:
 
 Each line becomes an independent **device** with `manufacturer` mapped per operator (`_LINE_OPERATORS` in `sensor.py`). Each device has one sensor:
 
-- **Operação** (`sensor.metro_sp_linha_{N}_{cor}_operacao`): `native_value = StatusLabel`; attributes carry status / colour fields plus `description` (the upstream `Description`, falling back to `StatusLabel` when empty). `entity_picture` points at the local `/metro_sp/linha_{N}.png` static asset registered in `__init__.py`.
+- **Operation** (`sensor.metro_sp_linha_{N}_{cor}_operacao`, translation key `operation`): `native_value = StatusLabel`; attributes carry status / colour fields plus `description` (the upstream `Description`, falling back to `StatusLabel` when empty). `entity_picture` points at the local `/metro_sp/linha_{N}.png` static asset registered by `card_registration.py`.
 
 `description` is intentionally an attribute, not a separate sensor: HA truncates state values longer than 255 characters to `unknown`, and the upstream incident text routinely exceeds that.
 
@@ -89,10 +90,14 @@ The `entity_id` is suggested explicitly in the constructor via `self.entity_id =
 
 `custom_components/metro_sp/www/metro-card.js` ships a zero-build vanilla web
 component (`custom:metro-card`, no Lit/bundler) that lists the integration's
-line sensors with their status. `__init__.py` serves it from the same static
-dir as the line images and registers it as a frontend module automatically
-(`add_extra_js_url`, versioned with `?v={integration.version}` to bust the
-browser cache on release) — users never add a dashboard resource by hand.
+line sensors with their status. `MetroSPCardRegistration` serves it from the
+same static dir as the line images and registers it as a **Lovelace dashboard
+resource** (versioned with `?v={integration.version}` to bust the browser
+cache on release) — users never add a dashboard resource by hand. Dashboard
+resources persist in storage and are fetched on every dashboard load, which
+closes the startup window where an extra module registered mid-boot was
+missing from already-served pages; `add_extra_js_url` remains only as the
+fallback for YAML-mode Lovelace, which has no programmatic resource storage.
 Styling uses HA design tokens (theme/light/dark follow automatically); i18n
 strings (`en`, `pt-BR`) are embedded in the file itself since this is a pure
 frontend plugin with no access to `custom_components` translations.
@@ -101,11 +106,10 @@ frontend plugin with no access to `custom_components` translations.
 
 `diagnostics.py` returns `MetroSPDiagnosticsPayload` (entry metadata + the indexed coordinator dump). `TO_REDACT` is empty today — keep the `async_redact_data` plumbing so adding a redacted key later is a one-line change. `.github/ISSUE_TEMPLATE/bug.yml` asks users to attach the dump.
 
-### Repairs
+There is deliberately no `repairs.py`: the integration has no recoverable condition to surface, and a scaffold with an unused helper only misleads. Add the platform (plus `issues.<issue_id>` translation strings and tests) together with the first real issue it raises.
 
-`repairs.py` is the entry point HA calls when the user clicks **Fix** on an issue:
+## Language
 
-- `async_create_fix_flow(hass, issue_id, data)` returns a `RepairsFlow`. Branch on `issue_id` for multiple kinds; the default returns `ConfirmRepairFlow`.
-- `async_raise_deprecated_api_issue(hass)` is the sample helper that registers an issue. Call helpers like this from the coordinator/setup when you detect a recoverable problem.
+Everything committed to code is English — identifiers, `ATTRIBUTION`, device names, translation keys (`operation`), commit messages. User-facing pt-BR strings live only in `translations/pt-BR.json`.
 
-Issue strings live under `issues.<issue_id>` in the translation files.
+**Documented exception: `README.md` is written in pt-BR.** The integration serves the São Paulo metro network and its audience is Brazilian; keep the README in pt-BR and do not "fix" it to English.
