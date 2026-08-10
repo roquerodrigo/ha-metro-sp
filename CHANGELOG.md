@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.3...v2.3.0) (2026-08-10)
+
+
+### Features
+
+* **coordinator:** poll upstream data every minute ([1dce613](https://github.com/roquerodrigo/ha-metro-sp/commit/1dce6132a88b287429ccc962de9ddf90494aca1f))
+
+
+### Documentation
+
+* normalize the README header layout ([10c3436](https://github.com/roquerodrigo/ha-metro-sp/commit/10c3436f9943cce1f7716fd7373a7b016466264b))
+
 ## [2.2.3](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.2...v2.2.3) (2026-08-07)
 
 
