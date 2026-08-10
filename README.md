@@ -73,7 +73,7 @@ Cada linha gera um **device** independente com um sensor:
 
 ## Atualização dos dados
 
-Os dados são atualizados a cada **5 minutos** via polling na API pública do Metrô SP. Nenhuma credencial é necessária.
+Os dados são atualizados a cada **1 minuto** via polling na API pública do Metrô SP. Nenhuma credencial é necessária.
 
 ## Licença
 

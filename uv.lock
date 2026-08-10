@@ -995,7 +995,7 @@ wheels = [
 
 [[package]]
 name = "ha-metro-sp"
-version = "2.2.2"
+version = "2.2.3"
 source = { virtual = "." }
 
 [package.dev-dependencies]

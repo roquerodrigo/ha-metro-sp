@@ -25,8 +25,8 @@ def _make_coordinator(hass, lines=None):
     return coord, client
 
 
-def test_update_interval_is_five_minutes():
-    assert timedelta(minutes=5) == UPDATE_INTERVAL
+def test_update_interval_is_one_minute():
+    assert timedelta(minutes=1) == UPDATE_INTERVAL
 
 
 def test_init_sets_domain_name(hass):
