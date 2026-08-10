@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from .data import MetroSPConfigEntry, MetroSPLine
 
-UPDATE_INTERVAL = timedelta(minutes=5)
+UPDATE_INTERVAL = timedelta(minutes=1)
 FAILURE_GRACE_PERIOD = timedelta(minutes=5)
 
 

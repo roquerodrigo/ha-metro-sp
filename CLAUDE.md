@@ -50,7 +50,7 @@ __init__.py           → instantiates ApiClient + DataUpdateCoordinator, perfor
 card_registration.py  → registers the whole www/ dir as static files under STATIC_URL_PREFIX
                         (per-line images + the bundled metro-card.js) and keeps the card
                         registered as a Lovelace dashboard resource
-coordinator.py        → polls every UPDATE_INTERVAL (5 min); returns dict[int, MetroSPLine] keyed by line Code;
+coordinator.py        → polls every UPDATE_INTERVAL (1 min); returns dict[int, MetroSPLine] keyed by line Code;
                         tolerates API failures for FAILURE_GRACE_PERIOD (5 min), returning stale data instead
                         of marking entities unavailable — only raises UpdateFailed once the grace period elapses
 sensor.py             → reads coordinator.data and creates one sensor per line (translation key
