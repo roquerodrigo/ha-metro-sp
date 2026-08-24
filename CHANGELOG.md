@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.3.0...v2.4.0) (2026-08-24)
+
+
+### Features
+
+* **hacs:** ship the install zip with every release ([e6c8665](https://github.com/roquerodrigo/ha-metro-sp/commit/e6c866528cbb91aa96fd9b99873e92eee4a16f3e))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump the python-development group across 1 directory with 3 updates ([09830e0](https://github.com/roquerodrigo/ha-metro-sp/commit/09830e02efaa77d092b0aa40a6c33bb6adf5f905))
+
 ## [2.3.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.2.3...v2.3.0) (2026-08-10)
 
 
