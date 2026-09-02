@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.0...v2.4.1) (2026-09-02)
+
+
+### Documentation
+
+* add GitHub Sponsors button and support section ([d64464f](https://github.com/roquerodrigo/ha-metro-sp/commit/d64464f4b51762bc6743be4a7c1c29efbccad25b))
+
 ## [2.4.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.3.0...v2.4.0) (2026-08-24)
 
 
