@@ -3,6 +3,8 @@
 [![CI](https://github.com/roquerodrigo/ha-metro-sp/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-metro-sp/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/roquerodrigo)
+
 [![Open your Home Assistant instance and open the repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-metro-sp&category=integration)
 
 ---
@@ -74,6 +76,10 @@ Cada linha gera um **device** independente com um sensor:
 ## Atualização dos dados
 
 Os dados são atualizados a cada **1 minuto** via polling na API pública do Metrô SP. Nenhuma credencial é necessária.
+
+## Apoie o projeto
+
+Esta integração é desenvolvida e mantida em tempo pessoal. Se for útil para você, considere [patrocinar o trabalho](https://github.com/sponsors/roquerodrigo) — é o que mantém o desenvolvimento, os testes e as publicações acontecendo.
 
 ## Licença
 
