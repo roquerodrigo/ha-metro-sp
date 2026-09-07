@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.4.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.0...v2.4.1) (2026-09-07)
+
+
+### Dependencies
+
+* **deps:** bump pip from 26.1.2 to 26.2 ([7a1ed3a](https://github.com/roquerodrigo/ha-metro-sp/commit/7a1ed3a6face5803f63613e8beead8f42b182ab2))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff ([1eaa82c](https://github.com/roquerodrigo/ha-metro-sp/commit/1eaa82c413fec875a8a4d1fb87a02124d343088c))
+
+
+### Documentation
+
+* add GitHub Sponsors button and support section ([d64464f](https://github.com/roquerodrigo/ha-metro-sp/commit/d64464f4b51762bc6743be4a7c1c29efbccad25b))
+* refresh CLAUDE.md ([23a7bbd](https://github.com/roquerodrigo/ha-metro-sp/commit/23a7bbd9122451d39ba0da435a681a6a23f424ba))
+
 ## [2.4.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.3.0...v2.4.0) (2026-08-24)
 
 
