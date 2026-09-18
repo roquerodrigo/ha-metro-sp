@@ -1,119 +1,154 @@
-# Code Style Guide
+# Guia de estilo de código
 
-Style conventions for the `ha-metro-sp` project. Before committing, run
-`uv run ruff format .`, `uv run ruff check . --fix` and
-`uv run mypy custom_components/metro_sp`; they must exit cleanly.
-`uv run pytest` (with the 90 % coverage gate) follows.
+Convenções de estilo do projeto `ha-metro-sp`. Antes de commitar, execute
+`uv run ruff format .`, `uv run ruff check . --fix` e
+`uv run mypy custom_components/metro_sp`; todos devem terminar sem erros.
+Em seguida vem `uv run pytest` (com o gate de 90 % de cobertura).
 
-**Always read this file before adding or restructuring code.**
+**Sempre leia este arquivo antes de adicionar ou reestruturar código.**
 
-## Language
+## Idioma
 
-- Code is written in **English**: file names, class names, function names,
-  variable names, dictionary keys, identifier strings.
-- The Metrô SP API itself uses Portuguese keys (`Code`, `ColorName`,
-  `StatusLabel`, …). Wrap them in a `MetroSPLine` `TypedDict` in `data.py` so
-  the rest of the code refers to a typed shape, not raw strings.
-- The conversation language with the user can be Portuguese or anything else;
-  what is committed to disk stays English (with the API-payload exception
-  above and the user-facing pt-BR translations).
-- User-facing strings belong in
-  `custom_components/metro_sp/translations/{en,pt-BR}.json` whenever Home
-  Assistant can translate them, which is why `_attr_translation_key` stays
-  English (`operation`) while the rendered name differs per language.
-- **The few user-facing strings Home Assistant cannot translate are pt-BR**:
-  `ATTRIBUTION` and the per-line device name (`Linha 1 - Azul`). There is no
-  translation mechanism for either, so they are rendered verbatim to every
-  user — and every user of this integration is looking at the São Paulo
-  network. English there would be a worse default, not a neutral one. Line
-  color names inside them come verbatim from the API payload.
-- Entity ids keep their historical pt-BR slugs
-  (`sensor.metro_sp_linha_{N}_{cor}_operacao`) — they are registry state on
-  users' installs, not code, and renaming them would break existing dashboards.
-- `README.md` is the one pt-BR document (see `CLAUDE.md` for the rationale).
+O `hacs.json` declara `"country": ["BR"]`: o Metrô SP e a CPTM só existem no
+Brasil, então o idioma do repositório é o **português do Brasil**.
 
-## File organization
+- **Toda prosa lida por pessoas é escrita em pt-BR:**
+  - Documentação: `README.md`, `CONTRIBUTING.md`, este guia, `CLAUDE.md`,
+    qualquer outro Markdown, docstrings e comentários de código.
+  - Histórico do Git: assunto e corpo dos commits, títulos e descrições de PR.
+  - Releases: notas de release e `CHANGELOG.md`, inclusive os títulos de seção
+    (`changelog-sections` em `release-please-config.json`).
+  - Comunicação pública: issues, comentários em issues e PRs, reviews,
+    discussions e os templates em `.github/`.
+  - Metadados: a descrição do repositório no GitHub e `description` em
+    `pyproject.toml`.
+- **O código é escrito em inglês**, independentemente do `country`: nomes de
+  arquivo, de classe, de função, de variável e de branch, chaves de dicionário,
+  strings identificadoras e mensagens de log. Tudo o que uma ferramenta
+  interpreta também é código: tipo e escopo do Conventional Commit
+  (`fix(sensor): usa o status quando a descrição vem vazia`), o rodapé
+  `BREAKING CHANGE:`, ids de workflow e de job, labels.
+- **Termos nativos do domínio nunca são traduzidos, nem no código nem na
+  prosa.** Eles são a linguagem ubíqua compartilhada com os usuários e com o
+  serviço de origem: `linha`, `operacao`, os nomes das cores das linhas
+  (`Azul`, `Lilás`, `Esmeralda`). O que envolve o termo continua em inglês.
+  Identificadores perdem os diacríticos (`operacao`); a prosa e as strings
+  traduzidas os mantêm (`operação`).
+- **Identificadores anteriores a esta regra permanecem como estão:** `Line`
+  (`MetroSPLine`, `MetroSPLineSensor`, `line_code`) e `operation` (translation
+  key e sufixo do unique id) traduzem `linha` e `operação`, mas o atributo de
+  estado `line_code`, a translation key e o unique id são contrato público ou
+  estado de registry nas instalações dos usuários. Não os renomeie; aplique a
+  regra apenas a identificadores novos.
+- A própria API do Metrô SP define as chaves do payload (`Code`, `ColorName`,
+  `StatusLabel`, …). Elas são encapsuladas no `TypedDict` `MetroSPLine`, em
+  `data.py`, para que o restante do código se refira a uma forma tipada, e não
+  a strings cruas.
+- O idioma da conversa com o usuário nunca decide o que é gravado em disco.
+- Strings voltadas ao usuário ficam em
+  `custom_components/metro_sp/translations/{en,pt-BR}.json` sempre que o Home
+  Assistant consegue traduzi-las; por isso `_attr_translation_key` permanece em
+  inglês (`operation`) enquanto o nome exibido varia por idioma. O `en.json`
+  continua obrigatório ao lado do `pt-BR.json`.
+- **As poucas strings voltadas ao usuário que o Home Assistant não consegue
+  traduzir ficam em pt-BR**: `ATTRIBUTION` e o nome do device de cada linha
+  (`Linha 1 - Azul`). Não existe mecanismo de tradução para nenhuma das duas,
+  então elas são exibidas literalmente a todos os usuários — e todo usuário
+  desta integração está olhando para a rede de São Paulo. Os nomes das cores
+  das linhas vêm literalmente do payload da API.
+- Os entity ids mantêm os slugs históricos em pt-BR
+  (`sensor.metro_sp_linha_{N}_{cor}_operacao`) — são estado de registry nas
+  instalações dos usuários, não código, e renomeá-los quebraria dashboards
+  existentes.
 
-- **One top-level class per file.** Multiple semantically related classes (e.g.
-  exception families, sensor entities for one platform) get grouped into a
-  package directory with one class per submodule and an `__init__.py`
-  re-exporting the public symbols.
-  - Example: `exceptions/` contains `api_client_error.py`,
-    `api_client_communication_error.py`, plus `__init__.py`.
-- **TypedDicts and `type` aliases do not count as "classes"** for this rule —
-  they live alongside related code (typically in `data.py`) and don't need
-  their own file.
-- **Helper functions** may live in the same file as the single class that uses
-  them (e.g. `_verify_response_or_raise` in `api.py`).
-- **`__init__.py` of the integration package** wires `async_setup_entry`,
-  `async_unload_entry`, `async_reload_entry` (delegating card/static-file
-  registration to `MetroSPCardRegistration`) and nothing else.
+## Organização de arquivos
 
-## Entities: one class per entity
+- **Uma classe de nível superior por arquivo.** Várias classes semanticamente
+  relacionadas (por exemplo, famílias de exceções ou as entidades de sensor de
+  uma plataforma) são agrupadas em um diretório de pacote, com uma classe por
+  submódulo e um `__init__.py` reexportando os símbolos públicos.
+  - Exemplo: `exceptions/` contém `api_client_error.py`,
+    `api_client_communication_error.py` e o `__init__.py`.
+- **TypedDicts e aliases `type` não contam como "classes"** para esta regra —
+  eles ficam junto do código relacionado (normalmente em `data.py`) e não
+  precisam de arquivo próprio.
+- **Funções auxiliares** podem ficar no mesmo arquivo da única classe que as
+  utiliza (por exemplo, `_verify_response_or_raise` em `api.py`).
+- **O `__init__.py` do pacote da integração** conecta `async_setup_entry`,
+  `async_unload_entry` e `async_reload_entry` (delegando o registro do card e
+  dos arquivos estáticos a `MetroSPCardRegistration`) e nada mais.
 
-- **One class per entity.** Every entity gets its own dedicated class — never
-  share a generic class parameterized by an `EntityDescription` subclass with
-  callable fields like `value_fn` or `action_fn`. Encode the entity's behaviour
-  directly in its class via `@property` and class-level `_attr_*` constants
-  (or a plain `EntityDescription` instance assigned at the class level).
-  - Don't write a `MetroSPSensorDescription` subclass with a `value_fn` field.
-  - Do write one class per entity — the existing `MetroSPLineSensor`
-    encodes the operacao behaviour directly via `@property` and class-level
-    `_attr_*` constants, with no description-with-callable indirection.
-- The reason: each entity is a discrete contract; mixing them through a
-  generic class hides the contract behind indirection and discourages per-entity
-  refinement (icons, state attributes, custom logic).
+## Entidades: uma classe por entidade
 
-## Naming
+- **Uma classe por entidade.** Toda entidade tem a sua própria classe dedicada —
+  nunca compartilhe uma classe genérica parametrizada por uma subclasse de
+  `EntityDescription` com campos chamáveis como `value_fn` ou `action_fn`.
+  Codifique o comportamento da entidade diretamente na classe, por meio de
+  `@property` e de constantes `_attr_*` no nível da classe (ou de uma instância
+  simples de `EntityDescription` atribuída no nível da classe).
+  - Não escreva uma subclasse `MetroSPSensorDescription` com um campo
+    `value_fn`.
+  - Escreva uma classe por entidade — a `MetroSPLineSensor` existente codifica
+    o comportamento de operacao diretamente, por meio de `@property` e de
+    constantes `_attr_*` no nível da classe, sem a indireção de uma description
+    com chamáveis.
+- O motivo: cada entidade é um contrato distinto; misturá-las em uma classe
+  genérica esconde o contrato atrás de indireção e desestimula o refinamento por
+  entidade (ícones, atributos de estado, lógica própria).
 
-- Public classes are prefixed with `MetroSP`.
-- Concrete platform entities end with the entity type:
+## Nomenclatura
+
+- Classes públicas recebem o prefixo `MetroSP`.
+- Entidades concretas de plataforma terminam com o tipo da entidade:
   `MetroSPLineSensor`.
-- Exception classes end with `Error`: `MetroSPApiClientError`,
+- Classes de exceção terminam com `Error`: `MetroSPApiClientError`,
   `MetroSPApiClientCommunicationError`.
-- Private attributes / functions are prefixed with `_`.
+- Atributos e funções privados recebem o prefixo `_`.
 
-## Typing
+## Tipagem
 
-**Strict typing. No generics, no `Any`.** Mypy (`uv run mypy custom_components/metro_sp`) enforces this.
+**Tipagem estrita. Sem genéricos, sem `Any`.** O Mypy (`uv run mypy custom_components/metro_sp`) garante isso.
 
-Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` / `tuple` /
-`set`, `dict[str, Any]`, `Mapping[str, Any]`.
+Proibidos: `typing.Any`, `object` como tipo de valor, `dict` / `list` / `tuple` /
+`set` sem parâmetros, `dict[str, Any]`, `Mapping[str, Any]`.
 
-Required:
+Obrigatórios:
 
-- `TypedDict` for known dict / JSON shapes (see `data.py`: `MetroSPLine`,
-  `MetroSPDiagnosticsEntry`, `MetroSPDiagnosticsPayload`,
+- `TypedDict` para formas conhecidas de dict / JSON (veja `data.py`:
+  `MetroSPLine`, `MetroSPDiagnosticsEntry`, `MetroSPDiagnosticsPayload`,
   `MetroSPSensorAttributes`).
-- `@dataclass` for structured records (`MetroSPData`).
-- Named `type` aliases for recursive / shared shapes — `JsonPrimitive`,
-  `JsonValue`, `JsonObject` in `data.py`.
-- `frozenset[str]` / `tuple[str, ...]` for fixed string collections.
-- `cast("TypedDictName", value)` at HA framework boundaries that hand us a
-  permissive type (e.g. `entry.data` is `MappingProxyType[str, Any]`).
+- `@dataclass` para registros estruturados (`MetroSPData`).
+- Aliases `type` nomeados para formas recursivas ou compartilhadas —
+  `JsonPrimitive`, `JsonValue`, `JsonObject` em `data.py`.
+- `frozenset[str]` / `tuple[str, ...]` para coleções fixas de strings.
+- `cast("TypedDictName", value)` nas fronteiras com o framework do HA que
+  entregam um tipo permissivo (por exemplo, `entry.data` é
+  `MappingProxyType[str, Any]`).
 
-When narrowing an HA-provided callback signature, mypy reports `[override]`
-(Liskov violation). Add `# type: ignore[override]` with a one-line comment
-explaining the deliberate narrowing.
+Ao estreitar a assinatura de um callback fornecido pelo HA, o mypy reporta
+`[override]` (violação de Liskov). Adicione `# type: ignore[override]` com um
+comentário de uma linha explicando o estreitamento deliberado.
 
-## Properties and `__init__`
+## Properties e `__init__`
 
-- **Always prefer `@property`** over assigning `_attr_*` values in `__init__`.
-  Properties are computed lazily from backing fields stored on the parent class
-  (e.g. `self.coordinator`, `self.entity_description`).
-- When the body of `__init__` would only call `super().__init__(...)`, omit
-  `__init__` entirely and let Python inherit the parent.
-- Class-level constants like `_attr_attribution = ATTRIBUTION` and
-  `_attr_has_entity_name = True` are fine — they don't depend on instance
-  state.
+- **Sempre prefira `@property`** a atribuir valores `_attr_*` no `__init__`.
+  Properties são calculadas sob demanda a partir dos campos guardados na classe
+  pai (por exemplo, `self.coordinator`, `self.entity_description`).
+- Quando o corpo do `__init__` apenas chamaria `super().__init__(...)`, omita o
+  `__init__` por completo e deixe o Python herdar o da classe pai.
+- Constantes no nível da classe, como `_attr_attribution = ATTRIBUTION` e
+  `_attr_has_entity_name = True`, são aceitas — não dependem do estado da
+  instância.
 
 ## Imports
 
-- Always start every module with `from __future__ import annotations` so type
-  hints become lazy strings and the runtime cost of `if TYPE_CHECKING` imports
-  is zero.
-- Same-package relative imports (`from .module import …`) are the default.
-- Move type-only imports into a `TYPE_CHECKING` block (Ruff `TC001`/`TC003`):
+- Sempre comece todo módulo com `from __future__ import annotations`, para que
+  as anotações de tipo virem strings avaliadas sob demanda e o custo em tempo
+  de execução dos imports sob `if TYPE_CHECKING` seja zero.
+- Imports relativos dentro do mesmo pacote (`from .module import …`) são o
+  padrão.
+- Mova imports usados apenas para tipagem para um bloco `TYPE_CHECKING` (Ruff
+  `TC001`/`TC003`):
 
   ```python
   from __future__ import annotations
@@ -124,139 +159,151 @@ explaining the deliberate narrowing.
       from .data import MetroSPLine
   ```
 
-- `noqa` comments are reserved for unavoidable framework constraints (e.g.
-  `# noqa: ARG001` for HA-framework callback parameters that must exist but go
-  unused). Document the reason inline if non-obvious. Never silence to "make
-  ruff happy" — fix the underlying code.
+- Comentários `noqa` são reservados a restrições inevitáveis do framework (por
+  exemplo, `# noqa: ARG001` para parâmetros de callback do HA que precisam
+  existir mas não são usados). Documente o motivo na própria linha quando não
+  for óbvio. Nunca silencie uma regra para "agradar o ruff" — corrija o código.
 
 ## Docstrings
 
-- Every public class, function, method (including `@property`) and `__init__`
-  has a docstring. Ruff enforces this via `D102`/`D107`.
-- A single sentence is usually enough. Describe the *contract* or the *why*,
-  not the obvious implementation.
-- Module-level docstring at the top of every `.py` file.
-- Avoid restating the type — the signature already does that.
+- Toda classe, função e método públicos (inclusive `@property`) e todo
+  `__init__` têm docstring. O Ruff garante isso com `D102`/`D107`.
+- As docstrings são escritas em pt-BR (veja [Idioma](#idioma)).
+- Uma única frase costuma bastar. Descreva o *contrato* ou o *porquê*, não a
+  implementação óbvia.
+- Docstring de módulo no topo de todo arquivo `.py`.
+- Evite repetir o tipo — a assinatura já faz isso.
 
-## Comments
+## Comentários
 
-- Default to **no comments**. Add one only when the *why* is not obvious from
-  the code: a hidden constraint, a workaround, a subtle invariant, or a
-  deliberate type-system override.
-- Never describe *what* the code does — well-named identifiers handle that.
-- **No section dividers** like `# --- API payloads ---` to group related
-  declarations. If a file has so many sections that you feel the need for
-  visual separators, split it into multiple files instead.
+- O padrão é **não comentar**. Adicione um comentário apenas quando o *porquê*
+  não for óbvio a partir do código: uma restrição oculta, um contorno, uma
+  invariante sutil ou uma sobreposição deliberada do sistema de tipos.
+- Nunca descreva *o que* o código faz — identificadores bem nomeados cuidam
+  disso.
+- **Sem divisores de seção** como `# --- API payloads ---` para agrupar
+  declarações relacionadas. Se um arquivo tem tantas seções que você sente falta
+  de separadores visuais, divida-o em vários arquivos.
 
 ## Logging
 
-- Each module uses the package-level `LOGGER` from `const.py`
-  (`LOGGER: Logger = getLogger(__package__)`); never call `logging.getLogger(...)`
-  ad-hoc.
-- Use **lazy `%`-formatting**, never f-strings — they force string interpolation
-  even when the level is filtered:
+- Cada módulo usa o `LOGGER` do pacote, definido em `const.py`
+  (`LOGGER: Logger = getLogger(__package__)`); nunca chame
+  `logging.getLogger(...)` de forma avulsa.
+- As mensagens de log são código e permanecem em inglês.
+- Use **formatação `%` tardia**, nunca f-strings — elas forçam a interpolação
+  mesmo quando o nível está filtrado:
 
   ```python
   LOGGER.warning("Metrô SP API error; keeping last known data: %s", exception)   # ✓
   LOGGER.warning(f"Metrô SP API error: {exception}")                              # ✗
   ```
 
-- Levels:
-  - `debug` — successful fetch summaries, every-poll diagnostics.
-  - `info` — one-shot lifecycle (setup complete).
-  - `warning` — recoverable failures (transient API error, falling back).
-  - `error` / `exception` — unrecoverable in current cycle; pair `exception`
-    with caught exceptions inside `except` blocks for full tracebacks.
+- Níveis:
+  - `debug` — resumos de buscas bem-sucedidas, diagnósticos de cada ciclo.
+  - `info` — eventos únicos do ciclo de vida (setup concluído).
+  - `warning` — falhas recuperáveis (erro transitório da API, uso de fallback).
+  - `error` / `exception` — falhas irrecuperáveis no ciclo atual; use
+    `exception` com exceções capturadas dentro de blocos `except` para obter o
+    traceback completo.
 
-## Error messages
+## Mensagens de erro
 
-- Format: `"Failed to <verb> <object>: <cause>"` where `<cause>` is the
-  exception or a short reason. Keep them short and grep-able.
-- Custom exceptions get the same hierarchy:
+- Formato: `"Failed to <verb> <object>: <cause>"`, em que `<cause>` é a exceção
+  ou um motivo curto. Mantenha-as curtas e fáceis de localizar com grep.
+- As exceções próprias seguem a mesma hierarquia:
   `MetroSPApiClientError` (base) → `MetroSPApiClientCommunicationError`
-  (timeout, connection, DNS). The Metrô SP API is unauthenticated, so there
-  is no `AuthenticationError`. Wrap raw upstream errors at the API client
-  boundary; everything above only catches the custom hierarchy.
+  (timeout, conexão, DNS). A API do Metrô SP não exige autenticação, então não
+  existe `AuthenticationError`. Encapsule os erros crus de origem na fronteira
+  do cliente da API; tudo o que fica acima captura apenas a hierarquia própria.
 
-## Coordinator and runtime data
+## Coordinator e runtime data
 
-- All API state flows through `entry.runtime_data: MetroSPData`
-  (`data.py`). Never store integration state in `hass.data` (the only
-  exceptions in this repo are the registration sentinels in
-  `card_registration.py` — `_STATIC_PATH_REGISTERED_KEY` and
-  `_EXTRA_MODULE_REGISTERED_KEY` — which are per-`hass`, not per-entry).
-- The coordinator is typed as `DataUpdateCoordinator[dict[int, MetroSPLine]]`,
-  keyed by line `Code`. `_async_update_data` returns the typed payload;
-  client errors map to `UpdateFailed`.
-- The Metrô SP API is unauthenticated, so no `ConfigEntryAuthFailed` /
-  reauth flow exists. Do not add one unless the upstream API gains auth.
+- Todo o estado da API passa por `entry.runtime_data: MetroSPData`
+  (`data.py`). Nunca guarde estado da integração em `hass.data` (as únicas
+  exceções neste repositório são as sentinelas de registro em
+  `card_registration.py` — `_STATIC_PATH_REGISTERED_KEY` e
+  `_EXTRA_MODULE_REGISTERED_KEY` —, que valem por `hass`, não por entry).
+- O coordinator é tipado como `DataUpdateCoordinator[dict[int, MetroSPLine]]`,
+  indexado pelo `Code` da linha. `_async_update_data` devolve o payload tipado;
+  erros do cliente viram `UpdateFailed`.
+- A API do Metrô SP não exige autenticação, então não existe
+  `ConfigEntryAuthFailed` nem fluxo de reauth. Não adicione um, a menos que a
+  API de origem passe a exigir autenticação.
 
 ## Config / diagnostics
 
-- `config_flow.py` carries a single `async_step_user` step backed by a
-  `_validate` helper. The API has no credentials, so there is no reauth /
-  reconfigure / options flow. Keep it that way until the API contract changes.
-- There is no `repairs.py` — the integration currently has no recoverable
-  condition to surface. Introduce the platform together with the first real
-  issue it raises, never as an unused scaffold.
-- `diagnostics.py` returns `MetroSPDiagnosticsPayload`. There are no secrets
-  in `entry.data`, so `TO_REDACT` is currently empty — keep the
-  `async_redact_data` plumbing in place so adding a redacted key later is a
-  one-line change.
+- O `config_flow.py` tem um único passo, `async_step_user`, apoiado em um
+  auxiliar `_validate`. A API não tem credenciais, então não há fluxo de
+  reauth, de reconfigure nem de options. Mantenha assim até o contrato da API
+  mudar.
+- Não existe `repairs.py` — a integração hoje não tem nenhuma condição
+  recuperável a expor. Introduza a plataforma junto com a primeira issue real
+  que ela levantar, nunca como um esqueleto sem uso.
+- O `diagnostics.py` devolve `MetroSPDiagnosticsPayload`. Não há segredos em
+  `entry.data`, então `TO_REDACT` está vazio — mantenha a chamada a
+  `async_redact_data` no lugar, para que adicionar uma chave a ocultar no
+  futuro seja uma mudança de uma linha.
 
-## Translations
+## Traduções
 
-- Two locales: `en.json` and `pt-BR.json`. `tests/test_translations.py`
-  parametrizes over every locale and fails if their nested key sets diverge.
-- Flow strings live under `config.step.<step_id>`; entity names under
-  `entity.sensor.<key>.name` (the sensor's translation key is `operation`).
+- Dois locales: `en.json` e `pt-BR.json`. O `tests/test_translations.py`
+  parametriza sobre todos os locales e falha se os conjuntos de chaves
+  aninhadas divergirem.
+- As strings do fluxo ficam em `config.step.<step_id>`; os nomes de entidade,
+  em `entity.sensor.<key>.name` (a translation key do sensor é `operation`).
 
-## Pre-commit hooks
+## Hooks de pre-commit
 
-`pre-commit` is a dev dependency (declared in `pyproject.toml`) and
-`.pre-commit-config.yaml` runs the lint commands as **local `uv run` hooks**
-(ruff format, ruff check, mypy), so the hook always uses the exact tool
-versions pinned in `pyproject.toml` — no separate hook pin to drift. Install
-once per clone:
+O `pre-commit` é uma dependência de desenvolvimento (declarada em
+`pyproject.toml`), e o `.pre-commit-config.yaml` executa os comandos de lint
+como **hooks locais via `uv run`** (ruff format, ruff check, mypy); assim o hook
+sempre usa exatamente as versões fixadas em `pyproject.toml` — sem um pin
+separado que possa divergir. Instale uma vez por clone:
 
 ```bash
 pre-commit install
 ```
 
-The hook runs the same gates as CI on every commit. Skip it only on
-emergency `git commit --no-verify` and immediately re-run the lint commands
-(`uv run ruff format .`, `uv run ruff check . --fix`,
+O hook executa os mesmos gates do CI a cada commit. Ignore-o apenas em um
+`git commit --no-verify` de emergência e, em seguida, execute de novo os
+comandos de lint (`uv run ruff format .`, `uv run ruff check . --fix`,
 `uv run mypy custom_components/metro_sp`).
 
 ## Conventional commits
 
-All commits follow [Conventional Commits](https://www.conventionalcommits.org/),
-which `release-please` parses to bump the version and generate `CHANGELOG.md`:
+Todos os commits seguem o
+[Conventional Commits](https://www.conventionalcommits.org/), que o
+`release-please` interpreta para incrementar a versão e gerar o `CHANGELOG.md`:
 
-| Type | Meaning | Bump |
+| Tipo | Significado | Incremento |
 |---|---|---|
-| `feat` | New feature | minor |
-| `fix` | Bug fix | patch |
-| `perf` | Performance improvement | patch |
-| `deps` | Dependency bump | patch |
-| `docs` | Documentation only | none |
-| `refactor` | Refactor without behavior change | none |
-| `test` | Test-only change | none |
-| `ci` | CI / tooling change | none |
-| `chore` | Anything else (rarely) | none |
+| `feat` | Nova funcionalidade | minor |
+| `fix` | Correção de bug | patch |
+| `perf` | Melhoria de desempenho | patch |
+| `deps` | Atualização de dependência | patch |
+| `docs` | Apenas documentação | nenhum |
+| `refactor` | Refatoração sem mudança de comportamento | nenhum |
+| `test` | Mudança apenas em testes | nenhum |
+| `ci` | Mudança de CI / ferramentas | nenhum |
+| `chore` | Qualquer outra coisa (raramente) | nenhum |
 
-- Subject line: imperative mood, lowercase, no trailing period.
-- Use scopes when useful: `fix(sensor): fall back description attribute to status label when empty`.
-- A `BREAKING CHANGE:` footer (or `!` after type) bumps the major version.
+- Assunto: em pt-BR, no imperativo, em minúsculas, sem ponto final. O tipo e o
+  escopo ficam sempre em inglês.
+- Use escopos quando forem úteis:
+  `fix(sensor): usa o status quando a descrição vem vazia`.
+- Um rodapé `BREAKING CHANGE:` (ou `!` depois do tipo) incrementa a versão
+  major.
 
-## Linting and verification
+## Lint e verificação
 
-- Ruff configuration lives in `pyproject.toml` (`[tool.ruff]`) with `select = ["ALL"]`.
-- Mypy configuration lives in `pyproject.toml` (`[tool.mypy]`). Run both directly
-  via `uv run ruff check .` and `uv run mypy custom_components/metro_sp`.
-- After every change run `uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_components/metro_sp && uv run pytest`.
-  Both gates mirror CI.
-- Tests live in `tests/`, mirroring the production layout. The 90 % coverage
-  gate (`[tool.pytest.ini_options]` in `pyproject.toml`) prevents untested code from sneaking in. When a test
-  exercises a state that is impossible under the new types, update or remove
-  it — never weaken the type to satisfy the test.
+- A configuração do Ruff fica em `pyproject.toml` (`[tool.ruff]`), com `select = ["ALL"]`.
+- A configuração do Mypy fica em `pyproject.toml` (`[tool.mypy]`). Execute ambos
+  diretamente com `uv run ruff check .` e `uv run mypy custom_components/metro_sp`.
+- Depois de cada mudança, execute `uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_components/metro_sp && uv run pytest`.
+  Os dois gates espelham o CI.
+- Os testes ficam em `tests/`, espelhando a estrutura do código de produção. O
+  gate de 90 % de cobertura (`[tool.pytest.ini_options]` em `pyproject.toml`)
+  impede que código sem teste passe despercebido. Quando um teste exercita um
+  estado impossível sob os novos tipos, atualize-o ou remova-o — nunca
+  enfraqueça o tipo para satisfazer o teste.

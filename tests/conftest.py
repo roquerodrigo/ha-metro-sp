@@ -67,10 +67,11 @@ async def setup_integration(hass, mock_api_client, enable_custom_integrations):
 
     from custom_components.metro_sp.const import DOMAIN
 
-    # metro_sp registers its Lovelace card as a dashboard resource, falling
-    # back to add_extra_js_url when Lovelace storage is unavailable. The full
-    # frontend component can't be set up in this minimal harness, so seed just
-    # the store add_extra_js_url writes to (frontend does the same at setup).
+    # O metro_sp registra o card Lovelace como recurso de dashboard e recorre
+    # ao add_extra_js_url quando o storage do Lovelace não está disponível. O
+    # componente frontend completo não pode ser configurado neste harness
+    # mínimo, então só é criado o store em que o add_extra_js_url escreve (o
+    # frontend faz o mesmo no setup).
     hass.data.setdefault(DATA_EXTRA_MODULE_URL, UrlManager(lambda *_: None, []))
 
     entry = MockConfigEntry(domain=DOMAIN, data={})

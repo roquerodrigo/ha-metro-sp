@@ -1,4 +1,4 @@
-"""MetroSPEntity base class."""
+"""Classe base MetroSPEntity."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from .coordinator import MetroSPDataUpdateCoordinator
 
 
 class MetroSPEntity(CoordinatorEntity[MetroSPDataUpdateCoordinator]):
-    """Base entity for Metrô SP. Per-line device_info is provided by subclasses."""
+    """Entidade base do Metrô SP. O device_info por linha vem das subclasses."""
 
     _attr_attribution = ATTRIBUTION
     _attr_has_entity_name = True

@@ -1,4 +1,4 @@
-"""Exception classes for the metro_sp API client."""
+"""Classes de exceção do cliente da API do metro_sp."""
 
 from __future__ import annotations
 

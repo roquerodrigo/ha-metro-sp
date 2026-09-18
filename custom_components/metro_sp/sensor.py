@@ -1,4 +1,4 @@
-"""Sensor platform for metro_sp."""
+"""Plataforma de sensor do metro_sp."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ async def async_setup_entry(
     entry: MetroSPConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up one sensor per line, adding sensors for lines that appear later."""
+    """Cria um sensor por linha, inclusive para linhas que surgirem depois."""
     coordinator = entry.runtime_data.coordinator
     known_line_codes: set[int] = set()
 
@@ -67,7 +67,7 @@ async def async_setup_entry(
 
 
 class MetroSPLineSensor(MetroSPEntity, SensorEntity):
-    """Sensor for a single Metrô SP / CPTM line."""
+    """Sensor de uma única linha do Metrô SP / CPTM."""
 
     _attr_translation_key = "operation"
     _attr_icon = "mdi:subway"
@@ -77,36 +77,36 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
         coordinator: MetroSPDataUpdateCoordinator,
         line_code: int,
     ) -> None:
-        """Initialize."""
+        """Inicializa o sensor."""
         super().__init__(coordinator)
         self._line_code = line_code
         color_slug = slugify(coordinator.data[line_code]["ColorName"])
         self._base_id = f"metro_sp_linha_{line_code}_{color_slug}"
-        # entity_id must be set in __init__ — HA reads it as suggested_object_id
-        # before the entity is registered.
+        # O entity_id precisa ser definido no __init__ — o HA o lê como
+        # suggested_object_id antes de a entidade ser registrada.
         self.entity_id = f"sensor.{self._base_id}_operacao"
 
     @property
     def _line_data(self) -> MetroSPLine:
-        """Return the latest payload for this sensor's line."""
+        """Devolve o payload mais recente da linha deste sensor."""
         return self.coordinator.data[self._line_code]
 
     @property
     def available(self) -> bool:
-        """Report unavailable while the upstream API stops listing this line."""
+        """Fica indisponível enquanto a API de origem deixa de listar esta linha."""
         return super().available and self._line_code in self.coordinator.data
 
     @property
     def unique_id(self) -> str:
-        """Return the unique id derived from the entry and the line code."""
+        """Devolve o unique id derivado da entry e do código da linha."""
         entry_id = self.coordinator.config_entry.entry_id
         return f"{entry_id}_{self._line_code}_operation"
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return per-line device info; manufacturer is operator-mapped."""
+        """Devolve o device info da linha; o manufacturer vem do mapa de operadores."""
         line = self._line_data
-        # ColorName is already normalized (title-cased) by the coordinator.
+        # O ColorName já chega normalizado (inicial maiúscula) pelo coordinator.
         line_name = f"Linha {line['Code']} - {line['ColorName']}"
         entry_id = self.coordinator.config_entry.entry_id
         return DeviceInfo(
@@ -117,22 +117,22 @@ class MetroSPLineSensor(MetroSPEntity, SensorEntity):
 
     @property
     def entity_picture(self) -> str:
-        """Return the local static image for this line."""
+        """Devolve a imagem estática local desta linha."""
         return f"{STATIC_URL_PREFIX}/linha_{self._line_code}.png"
 
     @property
     def native_value(self) -> str:
-        """Return the line's status label."""
+        """Devolve o rótulo de status da linha."""
         return self._line_data["StatusLabel"]
 
     @property
     def extra_state_attributes(self) -> MetroSPSensorAttributes:
         """
-        Return extra state attributes.
+        Devolve os atributos extras de estado.
 
-        ``description`` carries the upstream incident text (or the status
-        label as a fallback) — kept off the state so the 255-char HA limit
-        cannot drop the value to ``unknown``.
+        ``description`` carrega o texto de ocorrência da origem (ou o rótulo de
+        status como fallback) — fica fora do estado para que o limite de 255
+        caracteres do HA não derrube o valor para ``unknown``.
         """
         data = self._line_data
         return {

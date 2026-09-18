@@ -1,5 +1,6 @@
 {
     "name": "Metrô SP",
+    "country": ["BR"],
     "zip_release": true,
     "filename": "metro_sp.zip",
     "homeassistant": "2026.8.0",

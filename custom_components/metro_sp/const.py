@@ -1,4 +1,4 @@
-"""Constants for metro_sp."""
+"""Constantes do metro_sp."""
 
 from __future__ import annotations
 

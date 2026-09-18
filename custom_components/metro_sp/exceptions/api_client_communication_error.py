@@ -1,4 +1,4 @@
-"""Communication error raised by the API client."""
+"""Erro de comunicação levantado pelo cliente da API."""
 
 from __future__ import annotations
 
@@ -6,4 +6,4 @@ from .api_client_error import MetroSPApiClientError
 
 
 class MetroSPApiClientCommunicationError(MetroSPApiClientError):
-    """Exception to indicate a communication error."""
+    """Exceção que indica um erro de comunicação."""

@@ -1,46 +1,46 @@
 ---
-name: "Feature request"
-description: "Suggest an idea for this project"
+name: "Pedido de funcionalidade"
+description: "Sugira uma ideia para este projeto"
 body:
 - type: markdown
   attributes:
-    value: Before you open a new feature request, search through the existing feature requests to see if others have had the same idea.
+    value: Antes de abrir um novo pedido de funcionalidade, pesquise nos pedidos existentes para ver se outras pessoas já tiveram a mesma ideia.
 - type: checkboxes
   attributes:
     label: Checklist
     options:
-      - label: I have filled out the template to the best of my ability.
+      - label: Preenchi o template da melhor forma que pude.
         required: true
-      - label: This only contains 1 feature request (if you have multiple feature requests, open one feature request for each feature request).
+      - label: Este pedido trata de uma única funcionalidade (se você tem vários pedidos, abra uma issue para cada um).
         required: true
-      - label: This issue is not a duplicate feature request of [previous feature requests](https://github.com/ludeeus/integration_blueprint/issues?q=is%3Aissue+label%3A%22Feature+Request%22+).
+      - label: Este pedido não é duplicata de nenhum dos [pedidos anteriores](https://github.com/roquerodrigo/ha-metro-sp/issues?q=is%3Aissue).
         required: true
 
 - type: textarea
   attributes:
-    label: "Is your feature request related to a problem? Please describe."
-    description: "A clear and concise description of what the problem is."
-    placeholder: "I'm always frustrated when [...]"
+    label: "O seu pedido está relacionado a um problema? Descreva."
+    description: "Uma descrição clara e concisa do problema."
+    placeholder: "Sempre me incomoda quando [...]"
   validations:
     required: true
 
 - type: textarea
   attributes:
-    label: "Describe the solution you'd like"
-    description: "A clear and concise description of what you want to happen."
+    label: "Descreva a solução que você gostaria"
+    description: "Uma descrição clara e concisa do que você quer que aconteça."
   validations:
     required: true
 
 - type: textarea
   attributes:
-    label: "Describe alternatives you've considered"
-    description: "A clear and concise description of any alternative solutions or features you've considered."
+    label: "Descreva as alternativas que você considerou"
+    description: "Uma descrição clara e concisa das soluções ou funcionalidades alternativas que você considerou."
   validations:
     required: true
 
 - type: textarea
   attributes:
-    label: "Additional context"
-    description: "Add any other context or screenshots about the feature request here."
+    label: "Contexto adicional"
+    description: "Adicione aqui qualquer outro contexto ou capturas de tela sobre o pedido."
   validations:
     required: true

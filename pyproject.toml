@@ -6,7 +6,7 @@
 # to build/install it.
 name = "ha-metro-sp"
 version = "2.4.0"
-description = "Home Assistant integration for São Paulo metro status"
+description = "Integração Home Assistant para o status das linhas do Metrô SP e da CPTM"
 requires-python = ">=3.14.2"
 
 [tool.uv]

@@ -1,4 +1,4 @@
-"""Config flow for Metrô SP."""
+"""Config flow do Metrô SP."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class MetroSPFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Config flow for Metrô SP."""
+    """Config flow do Metrô SP."""
 
     VERSION = 1
 
@@ -27,7 +27,7 @@ class MetroSPFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         user_input: JsonObject | None = None,
     ) -> config_entries.ConfigFlowResult:
-        """Handle the initial step. The API is public — no credentials."""
+        """Trata o passo inicial. A API é pública — sem credenciais."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -40,7 +40,7 @@ class MetroSPFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="user", errors=errors)
 
     async def _validate(self) -> dict[str, str]:
-        """Test connectivity and return an errors dict (empty on success)."""
+        """Testa a conectividade e devolve um dict de erros (vazio no sucesso)."""
         try:
             await self._test_connectivity()
         except MetroSPApiClientCommunicationError as exception:
@@ -52,6 +52,6 @@ class MetroSPFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return {}
 
     async def _test_connectivity(self) -> None:
-        """Hit the API once to confirm it answers."""
+        """Consulta a API uma vez para confirmar que ela responde."""
         client = MetroSPApiClient(session=async_create_clientsession(self.hass))
         await client.async_get_lines()

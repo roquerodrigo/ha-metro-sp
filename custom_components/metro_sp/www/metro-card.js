@@ -1,24 +1,27 @@
 /**
- * Metrô SP card — a Lovelace custom card that lists the Metrô SP / CPTM lines
- * exposed by the `metro_sp` integration and shows each line's operation status.
+ * Card Metrô SP — um card custom do Lovelace que lista as linhas do Metrô SP /
+ * CPTM expostas pela integração `metro_sp` e mostra o status de operação de
+ * cada linha.
  *
- * Zero-build vanilla web component (no Lit/bundler). Styles are driven entirely
- * by Home Assistant design tokens so the card follows the active theme and
- * light/dark mode automatically. The status dot uses the upstream `status_color`
- * attribute; the line badge uses the line's official `color_hex`.
+ * Web component em vanilla JS, sem build (sem Lit nem bundler). Os estilos vêm
+ * inteiramente dos design tokens do Home Assistant, então o card acompanha o
+ * tema ativo e o modo claro/escuro automaticamente. O ponto de status usa o
+ * atributo `status_color` da origem; o selo da linha usa o `color_hex` oficial
+ * da linha.
  *
  * Config:
  *   type: custom:metro-card
- *   entities: [...]             # optional: pick which lines to show (entity ids).
- *                               #   when omitted, every metro_sp line is shown,
- *                               #   sorted by line number.
- *   secondary_info: last-changed  # last-changed | description | none (default last-changed)
+ *   entities: [...]             # opcional: escolhe as linhas exibidas (entity ids).
+ *                               #   quando omitido, todas as linhas do metro_sp
+ *                               #   são exibidas, ordenadas pelo número da linha.
+ *   secondary_info: last-changed  # last-changed | description | none (padrão last-changed)
  */
 
 const DEFAULT_SECONDARY = "last-changed";
 
-// i18n — pure frontend plugin (no custom_component translations), so strings are
-// embedded here and picked by the active HA UI language, falling back to English.
+// i18n — plugin puramente de frontend (sem as traduções do custom_component),
+// então as strings ficam embutidas aqui e são escolhidas pelo idioma ativo da UI
+// do HA, com fallback para o inglês.
 const TRANSLATIONS = {
   en: {
     "card.empty": "No Metrô SP lines found",
@@ -40,13 +43,13 @@ const TRANSLATIONS = {
   },
 };
 
-// Maps ha-form field names to their translation keys (for computeLabel).
+// Mapeia os nomes de campo do ha-form para as translation keys (para o computeLabel).
 const EDITOR_LABEL_KEYS = {
   entities: "editor.entities",
   secondary_info: "editor.secondary",
 };
 
-/** The active HA UI language, or a supported fallback (base lang, then "en"). */
+/** O idioma ativo da UI do HA, ou um fallback suportado (idioma base, depois "en"). */
 function resolveLang(hass) {
   const lang = (hass && (hass.locale?.language || hass.language || hass.selectedLanguage)) || "en";
   if (TRANSLATIONS[lang]) return lang;
@@ -54,19 +57,19 @@ function resolveLang(hass) {
   return "en";
 }
 
-/** Translate a dotted key for the active language; English is the fallback. */
+/** Traduz uma chave pontuada para o idioma ativo; o inglês é o fallback. */
 function localize(hass, key) {
   const lang = resolveLang(hass);
   return TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en[key] ?? key;
 }
 
-/** True for a metro_sp line sensor — identified by its integration attributes. */
+/** Verdadeiro para um sensor de linha do metro_sp — identificado pelos atributos da integração. */
 function isMetroLine(state) {
   const a = state?.attributes;
   return !!a && a.line_code !== undefined && a.color_hex !== undefined;
 }
 
-/** Escape a string for safe interpolation into innerHTML. */
+/** Escapa uma string para interpolação segura em innerHTML. */
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
@@ -95,8 +98,8 @@ class MetroCard extends HTMLElement {
     if (!["last-changed", "description", "none"].includes(secondary)) {
       throw new Error('metro-card: "secondary_info" must be "last-changed", "description" or "none"');
     }
-    // An empty list (the editor's initial state) means "show all lines", same
-    // as omitting the option — otherwise opening the editor would blank the card.
+    // Uma lista vazia (o estado inicial do editor) significa "mostrar todas as
+    // linhas", como omitir a opção — do contrário, abrir o editor esvaziaria o card.
     const entities =
       Array.isArray(config.entities) && config.entities.length
         ? config.entities.map((e) => (typeof e === "string" ? e : e.entity))
@@ -122,7 +125,7 @@ class MetroCard extends HTMLElement {
     return { min_columns: 6, min_rows: 3 };
   }
 
-  /** Discover the metro line sensors to display, sorted by line number. */
+  /** Descobre os sensores de linha a exibir, ordenados pelo número da linha. */
   _collect() {
     const hass = this._hass;
     const registry = hass.entities || {};
@@ -169,7 +172,7 @@ class MetroCard extends HTMLElement {
     const items = this._collect();
     const secondary = this._config.secondaryInfo;
 
-    // Skip a rebuild when nothing visible has changed (avoids flicker).
+    // Pula a reconstrução quando nada visível mudou (evita flicker).
     const signature = JSON.stringify([
       lang,
       secondary,
@@ -212,8 +215,8 @@ class MetroCard extends HTMLElement {
         <div class="list">${items.length ? rows : empty}</div>
       </ha-card>`;
 
-    // ha-relative-time is a property-driven element — wire hass + datetime after
-    // the string render (it self-refreshes its "x minutes ago" text).
+    // O ha-relative-time é um elemento orientado a propriedades — hass e datetime
+    // são ligados depois do render da string (ele atualiza sozinho o texto "há x minutos").
     this.shadowRoot.querySelectorAll(".rt").forEach((el) => {
       el.hass = hass;
       const ts = el.dataset.ts;
@@ -225,7 +228,7 @@ class MetroCard extends HTMLElement {
     });
   }
 
-  /** Open the more-info dialog for an entity (standard HA behaviour). */
+  /** Abre o diálogo more-info de uma entidade (comportamento padrão do HA). */
   _showMore(entityId) {
     this.dispatchEvent(
       new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true })
@@ -331,7 +334,7 @@ class MetroCardEditor extends HTMLElement {
     this._render();
   }
 
-  /** Build the ha-form schema with option labels in the active language. */
+  /** Monta o schema do ha-form com os rótulos das opções no idioma ativo. */
   _schema() {
     const t = (key) => localize(this._hass, key);
     return [
@@ -386,11 +389,11 @@ class MetroCardEditor extends HTMLElement {
   }
 }
 
-// The module runs once per URL it is served from, and the card URL carries the
-// integration version. Upgrading the integration without restarting Home
-// Assistant leaves the previous version's URL registered alongside the new one,
-// so the module is evaluated twice. Without this guard the second run throws on
-// the already-taken tag name and registers a duplicate card picker entry.
+// O módulo roda uma vez por URL de onde é servido, e a URL do card carrega a
+// versão da integração. Atualizar a integração sem reiniciar o Home Assistant
+// deixa a URL da versão anterior registrada ao lado da nova, então o módulo é
+// avaliado duas vezes. Sem esta guarda, a segunda execução falha no nome de tag
+// já ocupado e registra uma entrada duplicada no seletor de cards.
 if (!customElements.get("metro-card")) {
   customElements.define("metro-card", MetroCard);
   customElements.define("metro-card-editor", MetroCardEditor);

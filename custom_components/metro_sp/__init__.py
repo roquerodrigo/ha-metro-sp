@@ -1,4 +1,4 @@
-"""Metrô SP integration for Home Assistant."""
+"""Integração Metrô SP para o Home Assistant."""
 
 from __future__ import annotations
 
@@ -31,10 +31,10 @@ async def _async_migrate_legacy_unique_ids(
     entry: MetroSPConfigEntry,
 ) -> None:
     """
-    Rewrite legacy unique ids to the entry-scoped format.
+    Reescreve os unique ids legados para o formato com escopo da entry.
 
-    The legacy format embedded the entity_id and the line's color slug; a
-    color rename upstream changed the unique id and orphaned the entity.
+    O formato legado embutia o entity_id e o slug da cor da linha; uma cor
+    renomeada na origem mudava o unique id e deixava a entidade órfã.
     """
 
     def _migrate(registry_entry: er.RegistryEntry) -> dict[str, str] | None:
@@ -50,7 +50,7 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: MetroSPConfigEntry,
 ) -> bool:
-    """Set up Metrô SP from a config entry."""
+    """Configura o Metrô SP a partir de uma config entry."""
     integration = async_get_loaded_integration(hass, entry.domain)
 
     await MetroSPCardRegistration(hass, str(integration.version)).async_register()
@@ -75,7 +75,7 @@ async def async_unload_entry(
     hass: HomeAssistant,
     entry: MetroSPConfigEntry,
 ) -> bool:
-    """Handle removal of an entry."""
+    """Trata o unload de uma entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
@@ -83,7 +83,7 @@ async def async_remove_entry(
     hass: HomeAssistant,
     entry: MetroSPConfigEntry,
 ) -> None:
-    """Clean up the card registration when the last entry is removed."""
+    """Desfaz o registro do card quando a última entry é removida."""
     if hass.config_entries.async_entries(DOMAIN):
         return
     integration = async_get_loaded_integration(hass, entry.domain)
@@ -94,5 +94,5 @@ async def async_reload_entry(
     hass: HomeAssistant,
     entry: MetroSPConfigEntry,
 ) -> None:
-    """Reload config entry."""
+    """Recarrega a config entry."""
     await hass.config_entries.async_reload(entry.entry_id)

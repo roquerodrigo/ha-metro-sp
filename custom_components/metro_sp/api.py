@@ -1,4 +1,4 @@
-"""Metrô SP API Client."""
+"""Cliente da API do Metrô SP."""
 
 from __future__ import annotations
 
@@ -19,25 +19,25 @@ if TYPE_CHECKING:
 
 
 def _verify_response_or_raise(response: aiohttp.ClientResponse) -> None:
-    """Verify that the response is valid."""
+    """Verifica se a resposta é válida."""
     response.raise_for_status()
 
 
 class MetroSPApiClient:
-    """Metrô SP API Client."""
+    """Cliente da API do Metrô SP."""
 
     def __init__(self, session: aiohttp.ClientSession) -> None:
-        """Initialize."""
+        """Inicializa o cliente."""
         self._session = session
 
     async def async_get_lines(self) -> list[MetroSPLine]:
-        """Get all lines status from the API."""
+        """Obtém da API o status de todas as linhas."""
         raw = await self._api_wrapper(method="get", url=f"{API_BASE_URL}/lines")
         payload = cast("MetroSPLinesResponse", raw)
         return list(payload["Data"])
 
     async def _api_wrapper(self, method: str, url: str) -> JsonObject:
-        """Perform an HTTP request and return the parsed JSON object."""
+        """Executa uma requisição HTTP e devolve o objeto JSON interpretado."""
         try:
             async with asyncio.timeout(10):
                 response = await self._session.request(method=method, url=url)
