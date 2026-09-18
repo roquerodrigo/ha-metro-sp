@@ -210,8 +210,8 @@ def test_device_info_includes_entry_id_and_line_code():
 
 
 def test_device_info_name_uses_color_name():
-    # ColorName is normalized upstream by the coordinator; the sensor uses it
-    # verbatim to build the device name.
+    # O ColorName já chega normalizado pelo coordinator; o sensor o usa
+    # literalmente para montar o nome do device.
     sensor = _sensor(_line(code=3, color_name="Vermelha"))
     assert sensor.device_info["name"] == "Linha 3 - Vermelha"
 

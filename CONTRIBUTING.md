@@ -1,61 +1,62 @@
-# Contribution guidelines
+# Diretrizes de contribuição
 
-Contributing to this project should be as easy and transparent as possible, whether it's:
+Contribuir com este projeto deve ser o mais simples e transparente possível, seja para:
 
-- Reporting a bug
-- Discussing the current state of the code
-- Submitting a fix
-- Proposing new features
+- Reportar um bug
+- Discutir o estado atual do código
+- Enviar uma correção
+- Propor novas funcionalidades
 
-## Github is used for everything
+## Idioma
 
-Github is used to host code, to track issues and feature requests, as well as accept pull requests.
+Este repositório atende a um serviço que só existe no Brasil, então tudo é escrito em **português do Brasil**: issues, comentários, títulos e descrições de pull request, mensagens de commit, documentação, docstrings e comentários de código. O código permanece em inglês — identificadores, nomes de arquivo e de branch, mensagens de log e o tipo e o escopo do Conventional Commit (`fix(sensor): usa o status quando a descrição vem vazia`). Os termos do domínio (`linha`, `operacao`, os nomes das cores das linhas) nunca são traduzidos. Os detalhes estão na seção "Idioma" do [`CODE_STYLE.md`](./CODE_STYLE.md).
 
-Pull requests are the best way to propose changes to the codebase.
+## O GitHub é usado para tudo
 
-1. Fork the repo and create your branch from `main`.
-2. If you've changed something, update the documentation.
-3. Make sure your code lints (run `uv run ruff format .`, `uv run ruff check . --fix` and `uv run mypy custom_components/metro_sp`).
-4. Test you contribution.
-5. Issue that pull request!
+O GitHub hospeda o código, acompanha issues e pedidos de funcionalidade e recebe os pull requests.
 
-## Any contributions you make will be under the MIT Software License
+Pull requests são a melhor forma de propor mudanças no código.
 
-In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
+1. Faça um fork do repositório e crie a sua branch a partir da `main`.
+2. Se você alterou algo, atualize a documentação.
+3. Garanta que o código passa no lint (execute `uv run ruff format .`, `uv run ruff check . --fix` e `uv run mypy custom_components/metro_sp`).
+4. Teste a sua contribuição (`uv run pytest`).
+5. Abra o pull request!
 
-## Report bugs using Github's [issues](../../issues)
+## Toda contribuição fica sob a licença MIT
 
-GitHub issues are used to track public bugs.
-Report a bug by [opening a new issue](../../issues/new/choose); it's that easy!
+Em resumo: ao enviar mudanças de código, entende-se que elas ficam sob a mesma [licença MIT](http://choosealicense.com/licenses/mit/) que cobre o projeto. Entre em contato com os mantenedores se isso for um problema.
 
-## Write bug reports with detail, background, and sample code
+## Reporte bugs pelas [issues](../../issues) do GitHub
 
-**Great Bug Reports** tend to have:
+As issues do GitHub são usadas para acompanhar os bugs públicos.
+Reporte um bug [abrindo uma nova issue](../../issues/new/choose).
 
-- A quick summary and/or background
-- Steps to reproduce
-  - Be specific!
-  - Give sample code if you can.
-- What you expected would happen
-- What actually happens
-- Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
+## Escreva relatos de bug com detalhes, contexto e exemplos
 
-People *love* thorough bug reports. I'm not even kidding.
+**Bons relatos de bug** costumam ter:
 
-## Use a Consistent Coding Style
+- Um resumo rápido e/ou o contexto
+- Passos para reproduzir
+  - Seja específico!
+  - Inclua exemplos de código ou de configuração, se puder.
+- O que você esperava que acontecesse
+- O que acontece de fato
+- Observações (incluindo, possivelmente, por que você acha que isso acontece ou o que você tentou e não funcionou)
 
-Use [black](https://github.com/ambv/black) to make sure the code follows the style.
+## Siga o estilo de código do projeto
 
-## Test your code modification
+As convenções estão no [`CODE_STYLE.md`](./CODE_STYLE.md). A formatação e o lint são feitos com o [Ruff](https://docs.astral.sh/ruff/), e a tipagem é verificada com o Mypy.
 
-This custom component is based on [integration_blueprint template](https://github.com/ludeeus/integration_blueprint).
+## Teste a sua modificação
 
-It comes with development environment in a container, easy to launch
-if you use Visual Studio Code. With this container you will have a stand alone
-Home Assistant instance running and already configured with the included
-[`configuration.yaml`](./config/configuration.yaml)
-file.
+Esta integração foi baseada no [template integration_blueprint](https://github.com/ludeeus/integration_blueprint).
 
-## License
+Ela traz um ambiente de desenvolvimento em container, fácil de iniciar no
+Visual Studio Code. Com esse container você tem uma instância independente do
+Home Assistant em execução, já configurada com o
+[`configuration.yaml`](./config/configuration.yaml) incluído.
 
-By contributing, you agree that your contributions will be licensed under its MIT License.
+## Licença
+
+Ao contribuir, você concorda que as suas contribuições serão licenciadas sob a licença MIT do projeto.

@@ -23,55 +23,55 @@
       "changelog-sections": [
         {
           "type": "feat",
-          "section": "Features"
+          "section": "Funcionalidades"
         },
         {
           "type": "fix",
-          "section": "Bug Fixes"
+          "section": "Correções de bugs"
         },
         {
           "type": "perf",
-          "section": "Performance Improvements"
+          "section": "Melhorias de desempenho"
         },
         {
           "type": "revert",
-          "section": "Reverts"
+          "section": "Reversões"
         },
         {
           "type": "refactor",
-          "section": "Code Refactoring"
+          "section": "Refatoração de código"
         },
         {
           "type": "deps",
-          "section": "Dependencies"
+          "section": "Dependências"
         },
         {
           "type": "deps-dev",
-          "section": "Development Dependencies"
+          "section": "Dependências de desenvolvimento"
         },
         {
           "type": "docs",
-          "section": "Documentation"
+          "section": "Documentação"
         },
         {
           "type": "build",
-          "section": "Build System"
+          "section": "Sistema de build"
         },
         {
           "type": "ci",
-          "section": "Continuous Integration"
+          "section": "Integração contínua"
         },
         {
           "type": "test",
-          "section": "Tests"
+          "section": "Testes"
         },
         {
           "type": "style",
-          "section": "Styles"
+          "section": "Estilo"
         },
         {
           "type": "chore",
-          "section": "Miscellaneous Chores"
+          "section": "Tarefas diversas"
         }
       ]
     }

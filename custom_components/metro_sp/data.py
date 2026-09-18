@@ -1,4 +1,4 @@
-"""Custom types for metro_sp."""
+"""Tipos próprios do metro_sp."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ type JsonObject = Mapping[str, JsonValue]
 
 
 class MetroSPLine(TypedDict):
-    """Shape of a single entry in the /lines API response."""
+    """Forma de um item da resposta de /lines da API."""
 
     Code: int
     ColorName: str
@@ -33,13 +33,13 @@ class MetroSPLine(TypedDict):
 
 
 class MetroSPLinesResponse(TypedDict):
-    """Top-level wrapper of the /lines API response."""
+    """Envelope de nível superior da resposta de /lines da API."""
 
     Data: list[MetroSPLine]
 
 
 class MetroSPSensorAttributes(TypedDict):
-    """Shape of extra_state_attributes returned by MetroSPLineSensor."""
+    """Forma do extra_state_attributes devolvido por MetroSPLineSensor."""
 
     status_code: int
     status_color: str
@@ -50,7 +50,7 @@ class MetroSPSensorAttributes(TypedDict):
 
 
 class MetroSPDiagnosticsEntry(TypedDict):
-    """Entry section of the diagnostics dump."""
+    """Seção da entry no arquivo de diagnóstico."""
 
     title: str
     version: int
@@ -60,7 +60,7 @@ class MetroSPDiagnosticsEntry(TypedDict):
 
 
 class MetroSPDiagnosticsPayload(TypedDict):
-    """Top-level shape returned by async_get_config_entry_diagnostics."""
+    """Forma de nível superior devolvida por async_get_config_entry_diagnostics."""
 
     entry: MetroSPDiagnosticsEntry
     coordinator_data: Mapping[int, MetroSPLine] | None
@@ -71,7 +71,7 @@ type MetroSPConfigEntry = ConfigEntry[MetroSPData]
 
 @dataclass
 class MetroSPData:
-    """Data stored on entry.runtime_data for the Metrô SP integration."""
+    """Dados guardados em entry.runtime_data pela integração Metrô SP."""
 
     client: MetroSPApiClient
     coordinator: MetroSPDataUpdateCoordinator

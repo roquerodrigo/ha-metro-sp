@@ -125,7 +125,7 @@ async def test_api_wrapper_returns_json_on_success():
 
 
 async def test_api_wrapper_re_raises_subclass_unchanged():
-    """A pre-mapped MetroSPApiClientCommunicationError must not be wrapped twice."""
+    """Um MetroSPApiClientCommunicationError já mapeado não é encapsulado de novo."""
     session, _ = _make_session(
         side_effect=MetroSPApiClientCommunicationError("already mapped"),
     )

@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for metro_sp."""
+"""DataUpdateCoordinator do metro_sp."""
 
 from __future__ import annotations
 
@@ -24,22 +24,23 @@ FAILURE_GRACE_PERIOD = timedelta(minutes=5)
 
 def _normalize_line(line: MetroSPLine) -> MetroSPLine:
     """
-    Normalize upstream fields so consumers see consistent values.
+    Normaliza os campos da origem para que os consumidores vejam valores consistentes.
 
-    CPTM lines come back with ``ColorName`` in all caps (e.g. ``DIAMANTE``)
-    while Metrô lines are title-cased (``Azul``). Title-case it once here so
-    the whole integration — attributes, device names, cards — is consistent.
+    As linhas da CPTM chegam com ``ColorName`` em maiúsculas (ex.: ``DIAMANTE``),
+    enquanto as do Metrô vêm só com a inicial maiúscula (``Azul``). A conversão
+    é feita uma única vez aqui, para que toda a integração — atributos, nomes
+    de device, cards — fique consistente.
     """
     return {**line, "ColorName": line["ColorName"].title()}
 
 
 class MetroSPDataUpdateCoordinator(DataUpdateCoordinator["dict[int, MetroSPLine]"]):
-    """Coordinator for fetching Metrô SP line data."""
+    """Coordinator que busca os dados das linhas do Metrô SP."""
 
     config_entry: MetroSPConfigEntry
 
     def __init__(self, hass: HomeAssistant) -> None:
-        """Initialize."""
+        """Inicializa o coordinator."""
         super().__init__(
             hass=hass,
             logger=LOGGER,
@@ -49,7 +50,7 @@ class MetroSPDataUpdateCoordinator(DataUpdateCoordinator["dict[int, MetroSPLine]
         self._first_failure_at: datetime | None = None
 
     async def _async_update_data(self) -> dict[int, MetroSPLine]:
-        """Fetch data from API; tolerate failures shorter than the grace period."""
+        """Busca os dados na API; tolera falhas dentro do período de tolerância."""
         try:
             lines = await self.config_entry.runtime_data.client.async_get_lines()
         except MetroSPApiClientError as exception:
@@ -61,7 +62,7 @@ class MetroSPDataUpdateCoordinator(DataUpdateCoordinator["dict[int, MetroSPLine]
     def _handle_failure(
         self, exception: MetroSPApiClientError
     ) -> dict[int, MetroSPLine]:
-        """Suppress transient errors; raise UpdateFailed past the grace period."""
+        """Suprime erros transitórios; levanta UpdateFailed após a tolerância."""
         now = dt_util.utcnow()
         if self._first_failure_at is None:
             self._first_failure_at = now

@@ -53,7 +53,7 @@ async def test_update_data_returns_full_line_dict(hass, sample_lines):
 
 
 async def test_update_data_normalizes_uppercase_color_name(hass, sample_lines):
-    # CPTM lines come back with ColorName in all caps; it must be title-cased.
+    # A CPTM envia ColorName em maiúsculas; ele precisa sair com a inicial maiúscula.
     sample_lines[0]["ColorName"] = "DIAMANTE"
     coord, _ = _make_coordinator(hass, lines=sample_lines)
     result = await coord._async_update_data()

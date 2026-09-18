@@ -1,4 +1,4 @@
-"""Diagnostics support for metro_sp."""
+"""Suporte a diagnostics do metro_sp."""
 
 from __future__ import annotations
 
@@ -18,9 +18,9 @@ if TYPE_CHECKING:
         MetroSPDiagnosticsPayload,
     )
 
-# The Metrô SP API has no auth; entry.data is empty today.
-# We keep the redact plumbing in place so adding a redacted key later is a
-# one-line change.
+# A API do Metrô SP não tem autenticação; entry.data está vazio hoje.
+# A chamada de redact permanece para que adicionar uma chave a ocultar no
+# futuro seja uma mudança de uma linha.
 TO_REDACT: frozenset[str] = frozenset()
 
 
@@ -28,7 +28,7 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant,  # noqa: ARG001
     entry: MetroSPConfigEntry,
 ) -> MetroSPDiagnosticsPayload:
-    """Return diagnostics for a config entry."""
+    """Devolve os diagnostics de uma config entry."""
     redacted_data = cast(
         "Mapping[str, JsonValue]",
         async_redact_data(dict(entry.data), set(TO_REDACT)),

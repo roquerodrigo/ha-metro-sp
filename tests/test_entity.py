@@ -21,7 +21,7 @@ def test_has_entity_name():
 
 
 def test_base_does_not_carry_device_info():
-    """Per-line device_info is set by subclasses; base must not stomp it."""
+    """O device_info por linha vem das subclasses; a base não pode sobrescrevê-lo."""
     entity = _make_entity()
     assert getattr(entity, "_attr_device_info", None) is None
 

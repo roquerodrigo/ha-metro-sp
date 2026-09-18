@@ -1,41 +1,45 @@
 # CLAUDE.md
 
-Guidance for Claude Code (claude.ai/code) agents working in this repository.
+Orientações para agentes do Claude Code (claude.ai/code) que trabalham neste repositório.
 
-## Always read `CODE_STYLE.md` first
+## Sempre leia o `CODE_STYLE.md` primeiro
 
-Before creating, renaming or restructuring any file/class/function, **read [`CODE_STYLE.md`](./CODE_STYLE.md)** — the single source of truth for conventions (language, file organisation, naming, typing, coordinator pattern, translations, lint workflow, conventional commits). For user-facing topics (supported lines, install, sensor attributes) see [`README.md`](./README.md).
+Antes de criar, renomear ou reestruturar qualquer arquivo, classe ou função, **leia o [`CODE_STYLE.md`](./CODE_STYLE.md)** — a única fonte da verdade para as convenções (idioma, organização de arquivos, nomenclatura, tipagem, padrão do coordinator, traduções, fluxo de lint, conventional commits). Para os temas voltados ao usuário (linhas suportadas, instalação, atributos do sensor), veja o [`README.md`](./README.md).
 
-This file only adds what neither of those covers: the verification workflow, local-dev quirks, and the architectural *why*.
+Este arquivo só acrescenta o que nenhum dos dois cobre: o fluxo de verificação, as particularidades do desenvolvimento local e o *porquê* das decisões de arquitetura.
 
-## Verification workflow
+## Idioma do repositório
 
-**After every code change, run lint then tests, in that order, before declaring the task done:**
+O `hacs.json` declara `"country": ["BR"]`, então o idioma do repositório é o pt-BR: documentação, docstrings, comentários, commits, PRs, changelog, templates em `.github/` e toda resposta pública. O código permanece em inglês, e os termos nativos do domínio (`linha`, `operacao`, os nomes das cores) nunca são traduzidos. A regra completa está na seção "Idioma" do `CODE_STYLE.md`.
+
+## Fluxo de verificação
+
+**Depois de cada mudança de código, execute o lint e, em seguida, os testes, nessa ordem, antes de dar a tarefa como concluída:**
 
 ```bash
 uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_components/metro_sp && uv run pytest
 ```
 
-`pytest` enforces a **90 % coverage gate** (configured in `pyproject.toml`). Both gates mirror CI. Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
+O `pytest` impõe um **gate de 90 % de cobertura** (configurado em `pyproject.toml`). Os dois gates espelham o CI. Pule esta etapa apenas quando a mudança literalmente não puder afetar lint nem testes (por exemplo, edições só no README).
 
-## Local development
+## Desenvolvimento local
 
-- `scripts/develop` starts Home Assistant in debug mode with the integration loaded (config in `config/`, `PYTHONPATH` at `custom_components/`; no symlinks).
-- When restarting HA during development, clear the registry so entity/device IDs are recreated with current values:
+- O `scripts/develop` inicia o Home Assistant em modo debug com a integração carregada (configuração em `config/`, `PYTHONPATH` em `custom_components/`; sem symlinks).
+- Ao reiniciar o HA durante o desenvolvimento, limpe o registry para que os IDs de entidade e de device sejam recriados com os valores atuais:
 
   ```bash
   rm config/.storage/core.entity_registry config/.storage/core.device_registry
   ```
 
-- macOS Bluetooth causes intermittent crashes (PyObjC/CoreBluetooth race, exit 134), unrelated to this integration. Mitigate with `bluetooth: passive_scanning: false` in `config/configuration.yaml`.
+- O Bluetooth do macOS causa crashes intermitentes (condição de corrida entre PyObjC e CoreBluetooth, exit 134), sem relação com esta integração. Contorne com `bluetooth: passive_scanning: false` em `config/configuration.yaml`.
 
-## Architectural rationale
+## Justificativa da arquitetura
 
-Standard HA `DataUpdateCoordinator` layout; the non-obvious decisions:
+Estrutura padrão do HA com `DataUpdateCoordinator`; as decisões não óbvias:
 
-- **Coordinator grace period.** On upstream failure the coordinator returns the last known data for `FAILURE_GRACE_PERIOD` (5 min) instead of marking entities unavailable, only raising `UpdateFailed` once it elapses.
-- **Public, unauthenticated API** (`.../api/v1/lines`). There is deliberately no `AuthenticationError`, reauth, or options flow — do not add one unless the upstream API gains auth.
-- **`description` is a state attribute, not a separate sensor:** HA truncates state values longer than 255 characters to `unknown`, and the upstream incident text routinely exceeds that.
-- **Per-line device.** Each line is its own device, so `device_info` is a `@property` on `MetroSPLineSensor`, not on the `MetroSPEntity` base. The pt-BR `entity_id` slug (`sensor.metro_sp_linha_{N}_{cor}_operacao`) is set via `self.entity_id` in the constructor and is registry state on users' installs — never rename it.
-- **Bundled Lovelace card** (`www/metro-card.js`, a zero-build vanilla `custom:metro-card`): `MetroSPCardRegistration` registers it as a Lovelace dashboard resource, not just via `add_extra_js_url`. Dashboard resources persist in storage and are fetched on every dashboard load, closing the startup window where a mid-boot extra module was missing from already-served pages; `add_extra_js_url` remains only as the YAML-mode-Lovelace fallback. The `?v={integration.version}` query busts the browser cache on release. i18n strings are embedded in the file — a pure frontend plugin has no access to `custom_components` translations.
-- **No `repairs.py`:** there is no recoverable condition to surface. Add the platform together with the first real issue it raises, never as an unused scaffold.
+- **Período de tolerância do coordinator.** Quando a origem falha, o coordinator devolve os últimos dados conhecidos durante `FAILURE_GRACE_PERIOD` (5 min) em vez de marcar as entidades como indisponíveis, e só levanta `UpdateFailed` depois que esse período termina.
+- **API pública, sem autenticação** (`.../api/v1/lines`). Deliberadamente não existe `AuthenticationError`, reauth nem options flow — não adicione nenhum deles, a menos que a API de origem passe a exigir autenticação.
+- **`description` é um atributo de estado, não um sensor separado:** o HA trunca para `unknown` valores de estado com mais de 255 caracteres, e o texto de ocorrência da origem ultrapassa esse limite com frequência.
+- **Um device por linha.** Cada linha é o seu próprio device, então `device_info` é uma `@property` de `MetroSPLineSensor`, e não da base `MetroSPEntity`. O slug pt-BR do `entity_id` (`sensor.metro_sp_linha_{N}_{cor}_operacao`) é definido via `self.entity_id` no construtor e é estado de registry nas instalações dos usuários — nunca o renomeie.
+- **Card Lovelace embutido** (`www/metro-card.js`, um `custom:metro-card` em vanilla JS, sem build): a `MetroSPCardRegistration` o registra como recurso de dashboard do Lovelace, e não apenas via `add_extra_js_url`. Recursos de dashboard persistem em storage e são buscados a cada carregamento do dashboard, o que fecha a janela de inicialização em que um módulo extra adicionado no meio do boot faltava nas páginas já servidas; o `add_extra_js_url` permanece apenas como fallback para o Lovelace em modo YAML. A query `?v={integration.version}` invalida o cache do navegador a cada release. As strings de i18n ficam embutidas no arquivo — um plugin puramente de frontend não tem acesso às traduções de `custom_components`.
+- **Sem `repairs.py`:** não há nenhuma condição recuperável a expor. Adicione a plataforma junto com a primeira issue real que ela levantar, nunca como um esqueleto sem uso.

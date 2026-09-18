@@ -1,4 +1,4 @@
-"""Registration of the bundled Lovelace card with the frontend."""
+"""Registro do card Lovelace embutido no frontend."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ _WWW_DIR = Path(__file__).parent / "www"
 
 
 class MetroSPDashboardResource(TypedDict):
-    """Dashboard resource entry as stored by the Lovelace resource collection."""
+    """Recurso de dashboard como armazenado pela coleção de recursos do Lovelace."""
 
     id: str
     url: str
@@ -30,25 +30,26 @@ class MetroSPDashboardResource(TypedDict):
 
 class MetroSPCardRegistration:
     """
-    Serve the bundled card and keep it registered on dashboards.
+    Serve o card embutido e o mantém registrado nos dashboards.
 
-    The card is registered as a Lovelace dashboard resource instead of an
-    extra frontend module: extra modules are embedded in index.html only for
-    pages served after this integration has started setting up, so a
-    dashboard opened while Home Assistant was still starting rendered a
-    configuration error until a manual reload. Dashboard resources persist
-    in storage and are fetched on every dashboard load, which closes that
-    startup window. add_extra_js_url() remains only as the fallback for
-    YAML-mode resources, which cannot be managed programmatically.
+    O card é registrado como recurso de dashboard do Lovelace, e não como
+    módulo extra do frontend: módulos extras só são embutidos no index.html
+    das páginas servidas depois que esta integração começa o setup, então um
+    dashboard aberto enquanto o Home Assistant ainda iniciava exibia um erro
+    de configuração até um reload manual. Recursos de dashboard persistem em
+    storage e são buscados a cada carregamento do dashboard, o que fecha essa
+    janela de inicialização. O add_extra_js_url() permanece apenas como
+    fallback para recursos em modo YAML, que não podem ser gerenciados por
+    código.
     """
 
     def __init__(self, hass: HomeAssistant, version: str) -> None:
-        """Initialize the registration for one card version."""
+        """Inicializa o registro para uma versão do card."""
         self._hass = hass
         self._versioned_url = f"{_CARD_URL}?v={version}"
 
     async def async_register(self) -> None:
-        """Serve the card files and ensure dashboards can load them."""
+        """Serve os arquivos do card e garante que os dashboards os carreguem."""
         await self._async_register_static_path()
         if (resources := self._storage_resources()) is None:
             self._register_extra_module()
@@ -56,7 +57,7 @@ class MetroSPCardRegistration:
             await self._async_ensure_resource(resources)
 
     async def async_remove(self) -> None:
-        """Drop the dashboard resource of the card."""
+        """Remove o recurso de dashboard do card."""
         if (resources := self._storage_resources()) is None:
             return
         if not resources.loaded:
