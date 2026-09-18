@@ -50,7 +50,7 @@ As convenções estão no [`CODE_STYLE.md`](./CODE_STYLE.md). A formatação e o
 
 ## Teste a sua modificação
 
-Esta integração foi baseada no [template integration_blueprint](https://github.com/ludeeus/integration_blueprint).
+Este projeto é baseado no [ha-integration-blueprint](https://github.com/roquerodrigo/ha-integration-blueprint).
 
 Ela traz um ambiente de desenvolvimento em container, fácil de iniciar no
 Visual Studio Code. Com esse container você tem uma instância independente do
