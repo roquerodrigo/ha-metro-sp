@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.4.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.0...v2.4.1) (2026-09-19)
+
+
+### Dependências
+
+* **deps:** bump anyio from 4.13.0 to 4.14.2 ([8e8b11e](https://github.com/roquerodrigo/ha-metro-sp/commit/8e8b11e062071a875ae19d286ebd93611b10fe1e))
+* **deps:** bump pip from 26.1.2 to 26.2 ([7a1ed3a](https://github.com/roquerodrigo/ha-metro-sp/commit/7a1ed3a6face5803f63613e8beead8f42b182ab2))
+
+
+### Dependências de desenvolvimento
+
+* **deps-dev:** bump ruff ([1eaa82c](https://github.com/roquerodrigo/ha-metro-sp/commit/1eaa82c413fec875a8a4d1fb87a02124d343088c))
+* **deps-dev:** bump ruff in the python-development group ([b01c6a9](https://github.com/roquerodrigo/ha-metro-sp/commit/b01c6a91e9d5a5f184d92c59ebb51ef979cbe4b3))
+
+
+### Documentação
+
+* add GitHub Sponsors button and support section ([d64464f](https://github.com/roquerodrigo/ha-metro-sp/commit/d64464f4b51762bc6743be4a7c1c29efbccad25b))
+* adota o português do Brasil como idioma do repositório ([93db371](https://github.com/roquerodrigo/ha-metro-sp/commit/93db371d36e66011d33dae1ad3f310831ee1d8cd))
+* aponta o crédito do template para o ha-integration-blueprint ([8f9c795](https://github.com/roquerodrigo/ha-metro-sp/commit/8f9c795d43bf0069dc483ed5b729048b567428d1))
+* refresh CLAUDE.md ([23a7bbd](https://github.com/roquerodrigo/ha-metro-sp/commit/23a7bbd9122451d39ba0da435a681a6a23f424ba))
+
 ## [2.4.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.3.0...v2.4.0) (2026-08-24)
 
 
