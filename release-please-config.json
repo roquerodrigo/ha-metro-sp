@@ -44,35 +44,43 @@
         },
         {
           "type": "refactor",
-          "section": "Refatoração de código"
+          "section": "Refatoração de código",
+          "hidden": true
         },
         {
           "type": "deps",
-          "section": "Dependências"
+          "section": "Dependências",
+          "hidden": true
         },
         {
           "type": "deps-dev",
-          "section": "Dependências de desenvolvimento"
+          "section": "Dependências de desenvolvimento",
+          "hidden": true
         },
         {
           "type": "docs",
-          "section": "Documentação"
+          "section": "Documentação",
+          "hidden": true
         },
         {
           "type": "build",
-          "section": "Sistema de build"
+          "section": "Sistema de build",
+          "hidden": true
         },
         {
           "type": "ci",
-          "section": "Integração contínua"
+          "section": "Integração contínua",
+          "hidden": true
         },
         {
           "type": "test",
-          "section": "Testes"
+          "section": "Testes",
+          "hidden": true
         },
         {
           "type": "style",
-          "section": "Estilo"
+          "section": "Estilo",
+          "hidden": true
         },
         {
           "type": "chore",
