@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.0...v2.4.1) (2026-10-21)
+
+
+### Tarefas diversas
+
+* **release:** mantém no changelog apenas as mudanças visíveis ao usuário ([3f37eb6](https://github.com/roquerodrigo/ha-metro-sp/commit/3f37eb68c831e0a7903cfbd77597d8775dd424db))
+
 ## [2.4.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.3.0...v2.4.0) (2026-08-24)
 
 
