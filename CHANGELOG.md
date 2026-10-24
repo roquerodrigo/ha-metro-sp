@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.4.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.0...v2.4.1) (2026-10-24)
+
+
+### Correções de bugs
+
+* **api:** usa o novo endereço da API do Próximo Trem ([10bb1f2](https://github.com/roquerodrigo/ha-metro-sp/commit/10bb1f2c34d141f1084064f918ef294fe7730c95))
+* **sensor:** tipa o status_code como texto ([83e7367](https://github.com/roquerodrigo/ha-metro-sp/commit/83e73679be577d400fe4a063d27f1b8c78c90266))
+
+
+### Tarefas diversas
+
+* **release:** mantém no changelog apenas as mudanças visíveis ao usuário ([3f37eb6](https://github.com/roquerodrigo/ha-metro-sp/commit/3f37eb68c831e0a7903cfbd77597d8775dd424db))
+
 ## [2.4.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.3.0...v2.4.0) (2026-08-24)
 
 
