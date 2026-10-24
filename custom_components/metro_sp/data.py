@@ -26,7 +26,7 @@ class MetroSPLine(TypedDict):
     ColorName: str
     ColorHex: str
     Line: str
-    StatusCode: int
+    StatusCode: str
     StatusLabel: str
     StatusColor: str
     Description: NotRequired[str | None]
@@ -41,7 +41,7 @@ class MetroSPLinesResponse(TypedDict):
 class MetroSPSensorAttributes(TypedDict):
     """Forma do extra_state_attributes devolvido por MetroSPLineSensor."""
 
-    status_code: int
+    status_code: str
     status_color: str
     color_name: str
     color_hex: str
