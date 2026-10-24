@@ -22,7 +22,7 @@ def _line(  # noqa: PLR0913
     color_hex="#0455A1",
     status_label="OK",
     description="",
-    status_code=1,
+    status_code="OperacaoNormal",
     status_color="#00FF00",
     line_str="1",
 ):
@@ -85,7 +85,7 @@ async def test_sensor_added_when_new_line_appears_upstream(
         "ColorName": "Amarela",
         "ColorHex": "#FFF000",
         "Line": "4",
-        "StatusCode": 1,
+        "StatusCode": "OperacaoNormal",
         "StatusLabel": "Operação Normal",
         "StatusColor": "#00FF00",
         "Description": "",
@@ -133,7 +133,7 @@ async def test_operacao_attributes_keys(hass, setup_integration):
 
 async def test_operacao_attributes_values(hass, setup_integration):
     attrs = hass.states.get("sensor.metro_sp_linha_1_azul_operacao").attributes
-    assert attrs["status_code"] == 1
+    assert attrs["status_code"] == "OperacaoNormal"
     assert attrs["color_name"] == "Azul"
     assert attrs["color_hex"] == "#0455A1"
     assert attrs["line_code"] == 1
