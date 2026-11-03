@@ -5,9 +5,9 @@
  *
  * Web component em vanilla JS, sem build (sem Lit nem bundler). Os estilos vêm
  * inteiramente dos design tokens do Home Assistant, então o card acompanha o
- * tema ativo e o modo claro/escuro automaticamente. O ponto de status usa o
- * atributo `status_color` da origem; o selo da linha usa o `color_hex` oficial
- * da linha.
+ * tema ativo e o modo claro/escuro automaticamente. O ponto de status traduz o
+ * nome de cor do atributo `status_color` da origem (ex.: `verde`) para a cor
+ * correspondente do tema; o selo da linha usa o `color_hex` oficial da linha.
  *
  * Config:
  *   type: custom:metro-card
@@ -61,6 +61,31 @@ function resolveLang(hass) {
 function localize(hass, key) {
   const lang = resolveLang(hass);
   return TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en[key] ?? key;
+}
+
+const STATUS_COLOR_FALLBACK = "var(--disabled-color, #bdbdbd)";
+
+// A origem envia o nome da cor em pt-BR, que o CSS não reconhece.
+const STATUS_COLORS = {
+  verde: "var(--green-color, #4caf50)",
+  amarelo: "var(--amber-color, #ffc107)",
+  amarela: "var(--amber-color, #ffc107)",
+  laranja: "var(--orange-color, #ff9800)",
+  vermelho: "var(--red-color, #f44336)",
+  vermelha: "var(--red-color, #f44336)",
+  lavanda: "var(--purple-color, #926bc7)",
+  roxo: "var(--purple-color, #926bc7)",
+  azul: "var(--blue-color, #2196f3)",
+  cinza: "var(--grey-color, #9e9e9e)",
+};
+
+/** A cor CSS do ponto de status para o `status_color` da origem. */
+function statusDotColor(statusColor) {
+  const value = String(statusColor ?? "").trim();
+  const known = STATUS_COLORS[value.toLowerCase()];
+  if (known) return known;
+  if (value && globalThis.CSS?.supports?.("color", value)) return value;
+  return STATUS_COLOR_FALLBACK;
 }
 
 /** Verdadeiro para um sensor de linha do metro_sp — identificado pelos atributos da integração. */
@@ -200,7 +225,7 @@ class MetroCard extends HTMLElement {
               ${secondaryHtml}
             </div>
             <div class="status">
-              <span class="status-dot" style="background:${esc(item.statusColor)}"></span>
+              <span class="status-dot" style="background:${esc(statusDotColor(item.statusColor))}"></span>
               <span class="status-label">${esc(item.status)}</span>
             </div>
           </div>`;
