@@ -16,8 +16,7 @@ Brasil, então o idioma do repositório é o **português do Brasil**.
   - Documentação: `README.md`, `CONTRIBUTING.md`, este guia, `CLAUDE.md`,
     qualquer outro Markdown, docstrings e comentários de código.
   - Histórico do Git: assunto e corpo dos commits, títulos e descrições de PR.
-  - Releases: notas de release e `CHANGELOG.md`, inclusive os títulos de seção
-    (`changelog-sections` em `release-please-config.json`).
+  - Releases: notas de release e `CHANGELOG.md`, inclusive os títulos de seção.
   - Comunicação pública: issues, comentários em issues e PRs, reviews,
     discussions e os templates em `.github/`.
   - Metadados: a descrição do repositório no GitHub e `description` em
@@ -274,7 +273,8 @@ comandos de lint (`uv run ruff format .`, `uv run ruff check . --fix`,
 
 Todos os commits seguem o
 [Conventional Commits](https://www.conventionalcommits.org/), que o
-`release-please` interpreta para incrementar a versão e gerar o `CHANGELOG.md`:
+`release-autopilot` interpreta para incrementar a versão e escrever as notas da
+release e o `CHANGELOG.md`:
 
 | Tipo | Significado | Incremento |
 |---|---|---|
