@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.4.2](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.1...v2.4.2) (2026-11-03)
+
+### Correções
+
+- O ponto de status do card ficava sem cor quando a API enviava o nome da cor, como 'verde'; agora o card usa a cor correspondente do tema. ([#128](https://github.com/roquerodrigo/ha-metro-sp/pull/128))
+
 ## [2.4.1](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.0...v2.4.1) (2026-10-24)
 
 
