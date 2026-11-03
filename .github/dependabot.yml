@@ -64,5 +64,9 @@ updates:
           - "minor"
           - "patch"
     ignore:
-      # Dependabot should not update Home Assistant as that should match the homeassistant key in hacs.json
+      # O Home Assistant e o harness de teste sobem juntos, à mão: o pin
+      # acompanha a chave ``homeassistant`` do hacs.json, e cada versão do
+      # pytest-homeassistant-custom-component fixa um Home Assistant exato,
+      # junto com pytest, pytest-asyncio e pytest-cov.
       - dependency-name: "homeassistant"
+      - dependency-name: "pytest-homeassistant-custom-component"
