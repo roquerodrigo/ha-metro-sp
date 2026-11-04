@@ -1,54 +1,57 @@
----
-name: "Relato de bug"
-description: "Reporte um bug da integração"
+name: Relato de bug
+description: Relate um problema da integração.
+labels: [bug]
 body:
-- type: markdown
-  attributes:
-    value: Antes de abrir uma nova issue, pesquise nas issues existentes para ver se outras pessoas já tiveram o mesmo problema.
-- type: textarea
-  attributes:
-    label: "Detalhes do System Health"
-    description: "Cole os dados do card System Health do Home Assistant (https://www.home-assistant.io/more-info/system-health#github-issues)"
-  validations:
-    required: true
-- type: checkboxes
-  attributes:
-    label: Checklist
-    options:
-      - label: Habilitei os logs de debug na minha instalação.
-        required: true
-      - label: Preenchi o template da issue da melhor forma que pude.
-        required: true
-      - label: Esta issue trata de um único problema (se você tem vários problemas, abra uma issue para cada um).
-        required: true
-      - label: Esta issue não é duplicata de nenhuma das [issues anteriores](https://github.com/roquerodrigo/ha-metro-sp/issues?q=is%3Aissue).
-        required: true
-- type: textarea
-  attributes:
-    label: "Descreva o problema"
-    description: "Uma descrição clara e concisa do problema."
-  validations:
-    required: true
-- type: textarea
-  attributes:
-    label: Passos para reproduzir
-    description: "Sem os passos para reproduzir, a correção fica difícil. É muito importante preencher esta parte. Issues sem ela serão fechadas."
-    value: |
-      1.
-      2.
-      3.
-      ...
-  validations:
-    required: true
-- type: textarea
-  attributes:
-    label: "Logs de debug"
-    description: "Para habilitar os logs de debug, consulte https://www.home-assistant.io/integrations/logger/. O trecho **precisa** incluir _tudo_, desde a inicialização do Home Assistant até o ponto em que o problema ocorre."
-    render: text
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: "Arquivo de diagnóstico"
-    description: "Arraste o arquivo de diagnóstico para cá (veja https://www.home-assistant.io/integrations/diagnostics/ para mais informações)."
+  - type: markdown
+    attributes:
+      value: >-
+        Antes de abrir, procure o mesmo problema nas [issues existentes](https://github.com/roquerodrigo/ha-metro-sp/issues?q=is%3Aissue).
+        Relate um problema por issue.
+  - type: input
+    id: version
+    attributes:
+      label: Versão da integração
+      description: Como aparece no HACS.
+      placeholder: 1.2.3
+    validations:
+      required: true
+  - type: textarea
+    id: system-health
+    attributes:
+      label: Informações do sistema
+      description: >-
+        Vá em Configurações → Sistema → Reparos → ⋮ → Informações do sistema, selecione Copiar e cole aqui.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: O que aconteceu
+      description: O que você esperava que acontecesse e o que aconteceu no lugar.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Passos para reproduzir
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs de depuração
+      description: >-
+        Na página da integração, selecione ⋮ → Habilitar log de depuração, reproduza o problema,
+        depois selecione ⋮ → Desabilitar log de depuração e cole o trecho relevante do log baixado.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnósticos
+      description: Na página do dispositivo ou da integração, selecione ⋮ → Fazer download dos diagnósticos e arraste o arquivo para cá.

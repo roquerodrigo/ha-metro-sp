@@ -1,46 +1,33 @@
----
-name: "Pedido de funcionalidade"
-description: "Sugira uma ideia para este projeto"
+name: Pedido de funcionalidade
+description: Sugira uma nova funcionalidade ou uma melhoria.
+labels: [enhancement]
 body:
-- type: markdown
-  attributes:
-    value: Antes de abrir um novo pedido de funcionalidade, pesquise nos pedidos existentes para ver se outras pessoas já tiveram a mesma ideia.
-- type: checkboxes
-  attributes:
-    label: Checklist
-    options:
-      - label: Preenchi o template da melhor forma que pude.
-        required: true
-      - label: Este pedido trata de uma única funcionalidade (se você tem vários pedidos, abra uma issue para cada um).
-        required: true
-      - label: Este pedido não é duplicata de nenhum dos [pedidos anteriores](https://github.com/roquerodrigo/ha-metro-sp/issues?q=is%3Aissue).
-        required: true
-
-- type: textarea
-  attributes:
-    label: "O seu pedido está relacionado a um problema? Descreva."
-    description: "Uma descrição clara e concisa do problema."
-    placeholder: "Sempre me incomoda quando [...]"
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: "Descreva a solução que você gostaria"
-    description: "Uma descrição clara e concisa do que você quer que aconteça."
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: "Descreva as alternativas que você considerou"
-    description: "Uma descrição clara e concisa das soluções ou funcionalidades alternativas que você considerou."
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: "Contexto adicional"
-    description: "Adicione aqui qualquer outro contexto ou capturas de tela sobre o pedido."
-  validations:
-    required: true
+  - type: markdown
+    attributes:
+      value: >-
+        Antes de abrir, procure a mesma ideia nas [issues existentes](https://github.com/roquerodrigo/ha-metro-sp/issues?q=is%3Aissue).
+        Sugira uma funcionalidade por issue.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou caso de uso
+      description: O que você quer fazer e o que atrapalha hoje.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução proposta
+      description: Como você gostaria que funcionasse.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Outras soluções ou contornos que você já tentou.
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto adicional
+      description: Capturas de tela, modelo do aparelho, links ou qualquer outra coisa que ajude.
