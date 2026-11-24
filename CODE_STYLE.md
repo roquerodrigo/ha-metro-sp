@@ -74,8 +74,10 @@ Brasil, então o idioma do repositório é o **português do Brasil**.
 - **Funções auxiliares** podem ficar no mesmo arquivo da única classe que as
   utiliza (por exemplo, `_verify_response_or_raise` em `api.py`).
 - **O `__init__.py` do pacote da integração** conecta `async_setup_entry`,
-  `async_unload_entry` e `async_reload_entry` (delegando o registro do card e
-  dos arquivos estáticos a `MetroSPCardRegistration`) e nada mais.
+  `async_unload_entry`, `async_remove_entry` e `async_reload_entry` (delegando
+  o registro e a remoção do card e dos arquivos estáticos a
+  `MetroSPCardRegistration`), além da migração dos unique ids legados, e nada
+  mais.
 
 ## Entidades: uma classe por entidade
 
@@ -225,7 +227,8 @@ comentário de uma linha explicando o estreitamento deliberado.
   `_EXTRA_MODULE_REGISTERED_KEY` —, que valem por `hass`, não por entry).
 - O coordinator é tipado como `DataUpdateCoordinator[dict[int, MetroSPLine]]`,
   indexado pelo `Code` da linha. `_async_update_data` devolve o payload tipado;
-  erros do cliente viram `UpdateFailed`.
+  erros do cliente devolvem os últimos dados conhecidos durante
+  `FAILURE_GRACE_PERIOD` (5 min) e só viram `UpdateFailed` depois disso.
 - A API do Metrô SP não exige autenticação, então não existe
   `ConfigEntryAuthFailed` nem fluxo de reauth. Não adicione um, a menos que a
   API de origem passe a exigir autenticação.

@@ -1,62 +1,80 @@
-# Diretrizes de contribuição
+# Contribuindo
 
-Contribuir com este projeto deve ser o mais simples e transparente possível, seja para:
-
-- Reportar um bug
-- Discutir o estado atual do código
-- Enviar uma correção
-- Propor novas funcionalidades
+Relatos de bug, ideias e pull requests são bem-vindos.
 
 ## Idioma
 
-Este repositório atende a um serviço que só existe no Brasil, então tudo é escrito em **português do Brasil**: issues, comentários, títulos e descrições de pull request, mensagens de commit, documentação, docstrings e comentários de código. O código permanece em inglês — identificadores, nomes de arquivo e de branch, mensagens de log e o tipo e o escopo do Conventional Commit (`fix(sensor): usa o status quando a descrição vem vazia`). Os termos do domínio (`linha`, `operacao`, os nomes das cores das linhas) nunca são traduzidos. Os detalhes estão na seção "Idioma" do [`CODE_STYLE.md`](./CODE_STYLE.md).
+O Metrô SP e a CPTM só existem no Brasil, então issues, pull requests,
+mensagens de commit, documentação, docstrings e comentários são escritos em
+português do Brasil. O código continua em inglês: identificadores, nomes de
+arquivo e de branch, mensagens de log e o tipo e o escopo do Conventional
+Commit (`fix(sensor): usa o status quando a descrição vem vazia`). Os termos
+do domínio, como `linha`, `operacao` e os nomes das cores das linhas, não são
+traduzidos. A regra completa está na seção "Idioma" do
+[CODE_STYLE.md](CODE_STYLE.md).
 
-## O GitHub é usado para tudo
+## Relatando um bug
 
-O GitHub hospeda o código, acompanha issues e pedidos de funcionalidade e recebe os pull requests.
+Abra uma [issue](https://github.com/roquerodrigo/ha-metro-sp/issues/new/choose)
+com:
 
-Pull requests são a melhor forma de propor mudanças no código.
+- a versão do Home Assistant e a da integração;
+- o que você fez, o que esperava e o que aconteceu;
+- os diagnósticos baixados no menu da integração e as linhas relevantes do
+  log.
+
+## Ambiente de desenvolvimento
+
+O projeto usa o [uv](https://docs.astral.sh/uv/). Também há um dev container
+(`.devcontainer.json`) com tudo instalado.
+
+```bash
+scripts/setup      # instala as dependências no .venv
+scripts/develop    # roda o Home Assistant em http://localhost:8123 com esta integração carregada
+```
+
+O `scripts/develop` usa a configuração em [`config/`](config/). Para que os IDs
+de entidade e de dispositivo sejam recriados do zero, apague o registro antes
+de reiniciar:
+
+```bash
+rm config/.storage/core.entity_registry config/.storage/core.device_registry
+```
+
+O card de dashboard é JavaScript puro, sem etapa de build, e fica em
+`custom_components/metro_sp/www/metro-card.js`. Recarregue o navegador depois
+de alterá-lo.
+
+## Verificações
+
+Rode estes comandos antes de abrir um pull request. O CI roda os mesmos, e o
+`pre-commit install` faz os três primeiros rodarem a cada commit, junto com
+verificações de espaços, fim de linha e sintaxe de YAML, JSON e TOML.
+
+```bash
+uv run ruff format .                      # formatação
+uv run ruff check . --fix                 # lint
+uv run mypy custom_components/metro_sp    # verificação de tipos
+uv run pytest                             # testes, a cobertura precisa ficar em 90 % ou mais
+```
+
+Leia o [CODE_STYLE.md](CODE_STYLE.md) antes de adicionar ou reestruturar
+código.
+
+## Pull requests
 
 1. Faça um fork do repositório e crie a sua branch a partir da `main`.
-2. Se você alterou algo, atualize a documentação.
-3. Garanta que o código passa no lint (execute `uv run ruff format .`, `uv run ruff check . --fix` e `uv run mypy custom_components/metro_sp`).
-4. Teste a sua contribuição (`uv run pytest`).
-5. Abra o pull request!
-
-## Toda contribuição fica sob a licença MIT
-
-Em resumo: ao enviar mudanças de código, entende-se que elas ficam sob a mesma [licença MIT](http://choosealicense.com/licenses/mit/) que cobre o projeto. Entre em contato com os mantenedores se isso for um problema.
-
-## Reporte bugs pelas [issues](../../issues) do GitHub
-
-As issues do GitHub são usadas para acompanhar os bugs públicos.
-Reporte um bug [abrindo uma nova issue](../../issues/new/choose).
-
-## Escreva relatos de bug com detalhes, contexto e exemplos
-
-**Bons relatos de bug** costumam ter:
-
-- Um resumo rápido e/ou o contexto
-- Passos para reproduzir
-  - Seja específico!
-  - Inclua exemplos de código ou de configuração, se puder.
-- O que você esperava que acontecesse
-- O que acontece de fato
-- Observações (incluindo, possivelmente, por que você acha que isso acontece ou o que você tentou e não funcionou)
-
-## Siga o estilo de código do projeto
-
-As convenções estão no [`CODE_STYLE.md`](./CODE_STYLE.md). A formatação e o lint são feitos com o [Ruff](https://docs.astral.sh/ruff/), e a tipagem é verificada com o Mypy.
-
-## Teste a sua modificação
-
-Este projeto é baseado no [ha-integration-blueprint](https://github.com/roquerodrigo/ha-integration-blueprint).
-
-Ela traz um ambiente de desenvolvimento em container, fácil de iniciar no
-Visual Studio Code. Com esse container você tem uma instância independente do
-Home Assistant em execução, já configurada com o
-[`configuration.yaml`](./config/configuration.yaml) incluído.
+2. Escreva as mensagens de commit no padrão
+   [Conventional Commits](https://www.conventionalcommits.org/). As releases e
+   as notas de release são geradas a partir desses commits. Marque mudanças
+   incompatíveis com `!` ou com o rodapé `BREAKING CHANGE:`.
+3. Atualize `translations/en.json` e `translations/pt-BR.json` juntos quando
+   mudar textos exibidos ao usuário. Os textos do card ficam no próprio
+   `metro-card.js`, também nos dois idiomas.
+4. Atualize o README quando o comportamento, a configuração ou as entidades
+   mudarem.
+5. Preencha o template do pull request.
 
 ## Licença
 
-Ao contribuir, você concorda que as suas contribuições serão licenciadas sob a licença MIT do projeto.
+As contribuições são publicadas sob a [licença MIT](LICENSE) do projeto.
