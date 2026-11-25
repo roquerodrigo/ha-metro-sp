@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.0](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.2...v2.5.0) (2026-11-25)
+
+### Melhorias
+
+- O card do dashboard passou a usar os componentes nativos do Home Assistant, acompanhando o visual dos cards nativos e o tema ativo, com retorno ao toque e navegação pelo teclado em cada linha. ([#139](https://github.com/roquerodrigo/ha-metro-sp/pull/139))
+
 ## [2.4.2](https://github.com/roquerodrigo/ha-metro-sp/compare/v2.4.1...v2.4.2) (2026-11-03)
 
 ### Correções
