@@ -1,105 +1,74 @@
-/**
- * Card Metrô SP — um card custom do Lovelace que lista as linhas do Metrô SP /
- * CPTM expostas pela integração `metro_sp` e mostra o status de operação de
- * cada linha.
- *
- * Web component em vanilla JS, sem build (sem Lit nem bundler). Os estilos vêm
- * inteiramente dos design tokens do Home Assistant, então o card acompanha o
- * tema ativo e o modo claro/escuro automaticamente. O ponto de status traduz o
- * nome de cor do atributo `status_color` da origem (ex.: `verde`) para a cor
- * correspondente do tema; o selo da linha usa o `color_hex` oficial da linha.
- *
- * Config:
- *   type: custom:metro-card
- *   entities: [...]             # opcional: escolhe as linhas exibidas (entity ids).
- *                               #   quando omitido, todas as linhas do metro_sp
- *                               #   são exibidas, ordenadas pelo número da linha.
- *   secondary_info: last-changed  # last-changed | description | none (padrão last-changed)
- */
-
+const CARD_TYPE = "metro-card";
+const EDITOR_TYPE = "metro-card-editor";
+const INTEGRATION_DOMAIN = "metro_sp";
 const DEFAULT_SECONDARY = "last-changed";
+const SECONDARY_OPTIONS = ["last-changed", "description", "none"];
 
-// i18n — plugin puramente de frontend (sem as traduções do custom_component),
-// então as strings ficam embutidas aqui e são escolhidas pelo idioma ativo da UI
-// do HA, com fallback para o inglês.
 const TRANSLATIONS = {
   en: {
     "card.empty": "No Metrô SP lines found",
     "card.line": "Line",
     "editor.entities": "Lines to show (leave empty for all)",
-    "editor.secondary": "Secondary info",
-    "editor.secondary_last_changed": "Last changed",
-    "editor.secondary_description": "Status description",
-    "editor.secondary_none": "None",
+    "editor.secondary_info": "Secondary info",
+    "editor.secondary_info_last-changed": "Last changed",
+    "editor.secondary_info_description": "Status description",
+    "editor.secondary_info_none": "None",
   },
   "pt-BR": {
     "card.empty": "Nenhuma linha do Metrô SP encontrada",
     "card.line": "Linha",
     "editor.entities": "Linhas a exibir (vazio = todas)",
-    "editor.secondary": "Informação secundária",
-    "editor.secondary_last_changed": "Última alteração",
-    "editor.secondary_description": "Descrição do status",
-    "editor.secondary_none": "Nenhuma",
+    "editor.secondary_info": "Informação secundária",
+    "editor.secondary_info_last-changed": "Última alteração",
+    "editor.secondary_info_description": "Descrição do status",
+    "editor.secondary_info_none": "Nenhuma",
   },
 };
 
-// Mapeia os nomes de campo do ha-form para as translation keys (para o computeLabel).
-const EDITOR_LABEL_KEYS = {
-  entities: "editor.entities",
-  secondary_info: "editor.secondary",
-};
-
-/** O idioma ativo da UI do HA, ou um fallback suportado (idioma base, depois "en"). */
-function resolveLang(hass) {
-  const lang = (hass && (hass.locale?.language || hass.language || hass.selectedLanguage)) || "en";
-  if (TRANSLATIONS[lang]) return lang;
-  if (lang.split("-")[0] === "pt") return "pt-BR";
-  return "en";
-}
-
-/** Traduz uma chave pontuada para o idioma ativo; o inglês é o fallback. */
-function localize(hass, key) {
-  const lang = resolveLang(hass);
-  return TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en[key] ?? key;
-}
-
-const STATUS_COLOR_FALLBACK = "var(--disabled-color, #bdbdbd)";
+const STATUS_COLOR_FALLBACK = "var(--disabled-color)";
 
 // A origem envia o nome da cor em pt-BR, que o CSS não reconhece.
 const STATUS_COLORS = {
-  verde: "var(--green-color, #4caf50)",
-  amarelo: "var(--amber-color, #ffc107)",
-  amarela: "var(--amber-color, #ffc107)",
-  laranja: "var(--orange-color, #ff9800)",
-  vermelho: "var(--red-color, #f44336)",
-  vermelha: "var(--red-color, #f44336)",
-  lavanda: "var(--purple-color, #926bc7)",
-  roxo: "var(--purple-color, #926bc7)",
-  azul: "var(--blue-color, #2196f3)",
-  cinza: "var(--grey-color, #9e9e9e)",
+  verde: "var(--green-color)",
+  amarelo: "var(--amber-color)",
+  amarela: "var(--amber-color)",
+  laranja: "var(--orange-color)",
+  vermelho: "var(--red-color)",
+  vermelha: "var(--red-color)",
+  lavanda: "var(--purple-color)",
+  roxo: "var(--purple-color)",
+  azul: "var(--blue-color)",
+  cinza: "var(--grey-color)",
 };
 
-/** A cor CSS do ponto de status para o `status_color` da origem. */
-function statusDotColor(statusColor) {
-  const value = String(statusColor ?? "").trim();
+const resolveLanguage = (hass) => {
+  const language =
+    (hass && (hass.locale?.language || hass.language || hass.selectedLanguage)) || "en";
+  if (TRANSLATIONS[language]) return language;
+  if (language.split("-")[0] === "pt") return "pt-BR";
+  return "en";
+};
+
+const localize = (hass, key) =>
+  TRANSLATIONS[resolveLanguage(hass)]?.[key] ?? TRANSLATIONS.en[key] ?? key;
+
+const escapeHtml = (value) =>
+  String(value ?? "").replace(
+    /[&<>"']/g,
+    (character) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character],
+  );
+
+const statusColor = (sourceColor) => {
+  const value = String(sourceColor ?? "").trim();
   const known = STATUS_COLORS[value.toLowerCase()];
   if (known) return known;
   if (value && globalThis.CSS?.supports?.("color", value)) return value;
   return STATUS_COLOR_FALLBACK;
-}
+};
 
-/** Verdadeiro para um sensor de linha do metro_sp — identificado pelos atributos da integração. */
-function isMetroLine(state) {
-  const a = state?.attributes;
-  return !!a && a.line_code !== undefined && a.color_hex !== undefined;
-}
-
-/** Escapa uma string para interpolação segura em innerHTML. */
-function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
-  );
-}
+const isMetroLine = (state) =>
+  state?.attributes?.line_code !== undefined && state.attributes.color_hex !== undefined;
 
 class MetroCard extends HTMLElement {
   constructor() {
@@ -111,29 +80,26 @@ class MetroCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    return document.createElement("metro-card-editor");
+    return document.createElement(EDITOR_TYPE);
   }
 
   static getStubConfig() {
-    return { type: "custom:metro-card", secondary_info: DEFAULT_SECONDARY };
+    return { secondary_info: DEFAULT_SECONDARY };
   }
 
   setConfig(config) {
     const secondary = config.secondary_info ?? DEFAULT_SECONDARY;
-    if (!["last-changed", "description", "none"].includes(secondary)) {
-      throw new Error('metro-card: "secondary_info" must be "last-changed", "description" or "none"');
+    if (!SECONDARY_OPTIONS.includes(secondary)) {
+      throw new Error(`${CARD_TYPE}: "secondary_info" must be one of ${SECONDARY_OPTIONS.join(", ")}`);
     }
     // Uma lista vazia (o estado inicial do editor) significa "mostrar todas as
     // linhas", como omitir a opção — do contrário, abrir o editor esvaziaria o card.
     const entities =
       Array.isArray(config.entities) && config.entities.length
-        ? config.entities.map((e) => (typeof e === "string" ? e : e.entity))
+        ? config.entities.map((entity) => (typeof entity === "string" ? entity : entity.entity))
         : null;
-    this._config = {
-      secondaryInfo: secondary,
-      entities,
-    };
-    this._signature = null; // force re-render
+    this._config = { secondaryInfo: secondary, entities };
+    this._signature = null;
     if (this._hass) this._render();
   }
 
@@ -150,205 +116,165 @@ class MetroCard extends HTMLElement {
     return { min_columns: 6, min_rows: 3 };
   }
 
-  /** Descobre os sensores de linha a exibir, ordenados pelo número da linha. */
-  _collect() {
+  _lines() {
     const hass = this._hass;
     const registry = hass.entities || {};
-    let ids;
-    if (this._config.entities) {
-      ids = this._config.entities;
-    } else {
-      ids = Object.keys(hass.states).filter((id) => {
-        if (!id.startsWith("sensor.")) return false;
-        if (!isMetroLine(hass.states[id])) return false;
-        if (registry[id] && registry[id].hidden_by) return false;
-        return true;
-      });
-    }
+    const entityIds =
+      this._config.entities ??
+      Object.keys(hass.states).filter(
+        (entityId) =>
+          entityId.startsWith("sensor.") &&
+          isMetroLine(hass.states[entityId]) &&
+          !registry[entityId]?.hidden,
+      );
 
-    const items = ids
-      .map((id) => {
-        const st = hass.states[id];
-        if (!st || !isMetroLine(st)) return null;
-        const a = st.attributes;
-        return {
-          id,
-          lineCode: a.line_code,
-          colorName: a.color_name,
-          colorHex: a.color_hex,
-          statusColor: a.status_color,
-          picture: a.entity_picture,
-          description: a.description,
-          status: st.state,
-          lastChanged: st.last_changed,
-        };
-      })
-      .filter(Boolean);
-
-    items.sort((x, y) => Number(x.lineCode) - Number(y.lineCode));
-    return items;
+    return entityIds
+      .map((entityId) => hass.states[entityId])
+      .filter(isMetroLine)
+      .map((state) => ({
+        entityId: state.entity_id,
+        lineCode: state.attributes.line_code,
+        colorName: state.attributes.color_name,
+        colorHex: state.attributes.color_hex,
+        statusColor: state.attributes.status_color,
+        picture: state.attributes.entity_picture,
+        description: state.attributes.description,
+        status: hass.formatEntityState(state),
+        lastChanged: state.last_changed,
+      }))
+      .sort((left, right) => Number(left.lineCode) - Number(right.lineCode));
   }
 
   _render() {
     if (!this._hass) return;
     const hass = this._hass;
-    const t = (key) => localize(hass, key);
-    const lang = resolveLang(hass);
-    const items = this._collect();
-    const secondary = this._config.secondaryInfo;
+    const lines = this._lines();
 
-    // Pula a reconstrução quando nada visível mudou (evita flicker).
     const signature = JSON.stringify([
-      lang,
-      secondary,
-      items.map((i) => [i.id, i.status, i.statusColor, i.picture, i.description, i.lastChanged]),
+      resolveLanguage(hass),
+      this._config.secondaryInfo,
+      lines.map((line) => [
+        line.entityId,
+        line.status,
+        line.statusColor,
+        line.picture,
+        line.description,
+        line.lastChanged,
+      ]),
     ]);
     if (signature === this._signature) return;
     this._signature = signature;
 
-    const rows = items
-      .map((item) => {
-        const badge = item.picture
-          ? `<img class="badge" src="${esc(item.picture)}" alt="${esc(item.colorName)}" />`
-          : `<span class="badge dot" style="background:${esc(item.colorHex)}">${esc(item.lineCode)}</span>`;
-        const secondaryHtml =
-          secondary === "description"
-            ? `<div class="secondary">${esc(item.description || item.status)}</div>`
-            : secondary === "last-changed"
-              ? `<div class="secondary"><ha-relative-time class="rt" data-ts="${esc(item.lastChanged)}"></ha-relative-time></div>`
-              : "";
-        return `
-          <div class="row" data-id="${esc(item.id)}">
-            ${badge}
-            <div class="body">
-              <div class="name">${esc(t("card.line"))} ${esc(item.lineCode)} · ${esc(item.colorName)}</div>
-              ${secondaryHtml}
-            </div>
-            <div class="status">
-              <span class="status-dot" style="background:${esc(statusDotColor(item.statusColor))}"></span>
-              <span class="status-label">${esc(item.status)}</span>
-            </div>
-          </div>`;
-      })
-      .join("");
-
-    const empty = `<div class="empty"><ha-icon icon="mdi:subway-alert-variant"></ha-icon><span>${t("card.empty")}</span></div>`;
+    const empty = `
+      <div class="empty">
+        <ha-icon icon="mdi:subway-alert-variant"></ha-icon>
+        <span>${escapeHtml(localize(hass, "card.empty"))}</span>
+      </div>`;
 
     this.shadowRoot.innerHTML = `
       <style>${MetroCard.styles}</style>
       <ha-card>
-        <div class="list">${items.length ? rows : empty}</div>
+        <div class="lines">${lines.length ? lines.map((line) => this._renderLine(line)).join("") : empty}</div>
       </ha-card>`;
 
-    // O ha-relative-time é um elemento orientado a propriedades — hass e datetime
-    // são ligados depois do render da string (ele atualiza sozinho o texto "há x minutos").
-    this.shadowRoot.querySelectorAll(".rt").forEach((el) => {
-      el.hass = hass;
-      const ts = el.dataset.ts;
-      if (ts) el.datetime = new Date(ts);
+    this.shadowRoot.querySelectorAll("ha-relative-time").forEach((element) => {
+      element.hass = hass;
+      element.datetime = new Date(element.dataset.datetime);
     });
 
-    this.shadowRoot.querySelectorAll(".row").forEach((row) => {
-      row.addEventListener("click", () => this._showMore(row.dataset.id));
+    this.shadowRoot.querySelectorAll(".line").forEach((element) => {
+      element.addEventListener("click", () => this._showMoreInfo(element.dataset.entity));
+      element.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        this._showMoreInfo(element.dataset.entity);
+      });
     });
   }
 
-  /** Abre o diálogo more-info de uma entidade (comportamento padrão do HA). */
-  _showMore(entityId) {
+  _renderLine(line) {
+    const name = `${localize(this._hass, "card.line")} ${line.lineCode} · ${line.colorName}`;
+    const icon = line.picture
+      ? `<ha-tile-icon image-url="${escapeHtml(line.picture)}"></ha-tile-icon>`
+      : `<ha-tile-icon style="--tile-icon-color: ${escapeHtml(line.colorHex)}">
+          <span slot="icon" class="line-code">${escapeHtml(line.lineCode)}</span>
+        </ha-tile-icon>`;
+
+    let secondary = "";
+    if (this._config.secondaryInfo === "description") {
+      const description = line.description || line.status;
+      secondary = `<span slot="secondary" title="${escapeHtml(description)}">${escapeHtml(description)}</span>`;
+    } else if (this._config.secondaryInfo === "last-changed" && line.lastChanged) {
+      secondary = `<ha-relative-time slot="secondary" data-datetime="${escapeHtml(line.lastChanged)}"></ha-relative-time>`;
+    }
+
+    return `
+      <div
+        class="line"
+        data-entity="${escapeHtml(line.entityId)}"
+        role="button"
+        tabindex="0"
+        aria-label="${escapeHtml(`${name}: ${line.status}`)}"
+      >
+        <ha-ripple></ha-ripple>
+        ${icon}
+        <ha-tile-info primary="${escapeHtml(name)}">${secondary}</ha-tile-info>
+        <ha-badge class="status" style="--badge-color: ${escapeHtml(statusColor(line.statusColor))}">
+          <ha-icon slot="icon" icon="mdi:circle"></ha-icon>
+          ${escapeHtml(line.status)}
+        </ha-badge>
+      </div>`;
+  }
+
+  _showMoreInfo(entityId) {
     this.dispatchEvent(
-      new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true })
+      new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true }),
     );
   }
 
   static get styles() {
     return `
       :host { display: block; }
-      ha-card { padding: 8px; }
-      .list { display: flex; flex-direction: column; }
-      .row {
+      ha-card { padding: var(--ha-space-2, 8px); }
+      .lines { display: flex; flex-direction: column; }
+      .line {
+        --ha-ripple-color: var(--primary-color);
+        --ha-ripple-hover-opacity: 0.04;
+        --ha-ripple-pressed-opacity: 0.12;
+        position: relative;
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: var(--ha-space-3, 12px);
+        min-height: 56px;
+        padding: 0 var(--ha-space-2, 8px);
+        border-radius: var(--ha-border-radius-lg, 12px);
         cursor: pointer;
-        padding: 10px 12px;
-        min-height: 40px;
-        border-radius: 12px;
-        transition: background .2s ease;
+        outline: none;
       }
-      .row:hover { background: var(--secondary-background-color); }
-      .badge {
-        flex: 0 0 auto;
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-        object-fit: contain;
+      .line:focus-visible { box-shadow: 0 0 0 2px var(--primary-color); }
+      ha-tile-icon { flex: none; }
+      .line-code {
+        font-weight: var(--ha-font-weight-bold, 700);
+        font-size: var(--ha-font-size-m, 14px);
       }
-      .badge.dot {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        color: #fff;
-        font-weight: 700;
-        font-size: 0.95rem;
-        text-shadow: 0 1px 2px rgba(0,0,0,.35);
-      }
-      .body { flex: 1 1 auto; min-width: 0; }
-      .name {
-        color: var(--primary-text-color);
-        font-size: 1.05rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .secondary {
-        color: var(--secondary-text-color);
-        font-size: 0.8125rem;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+      ha-tile-info { flex: 1 1 auto; min-width: 0; }
       .status {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        max-width: 45%;
-      }
-      .status-dot {
-        flex: 0 0 auto;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        box-shadow: 0 0 0 2px var(--ha-card-background, var(--card-background-color, #fff));
-      }
-      .status-label {
-        color: var(--primary-text-color);
-        font-size: 0.95rem;
-        text-align: right;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        flex: none;
+        --ha-badge-size: 28px;
+        --ha-badge-icon-size: 10px;
       }
       .empty {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--ha-space-2, 8px);
+        padding: var(--ha-space-4, 16px) var(--ha-space-3, 12px);
         color: var(--secondary-text-color);
-        padding: 16px 12px;
       }
     `;
   }
 }
 
 class MetroCardEditor extends HTMLElement {
-  constructor() {
-    super();
-    this._config = {};
-    this._hass = null;
-  }
-
   setConfig(config) {
     this._config = config;
     this._render();
@@ -359,17 +285,12 @@ class MetroCardEditor extends HTMLElement {
     this._render();
   }
 
-  /** Monta o schema do ha-form com os rótulos das opções no idioma ativo. */
   _schema() {
-    const t = (key) => localize(this._hass, key);
     return [
       {
         name: "entities",
         selector: {
-          entity: {
-            multiple: true,
-            filter: { integration: "metro_sp", domain: "sensor" },
-          },
+          entity: { multiple: true, filter: { integration: INTEGRATION_DOMAIN, domain: "sensor" } },
         },
       },
       {
@@ -377,30 +298,31 @@ class MetroCardEditor extends HTMLElement {
         selector: {
           select: {
             mode: "dropdown",
-            options: [
-              { value: "last-changed", label: t("editor.secondary_last_changed") },
-              { value: "description", label: t("editor.secondary_description") },
-              { value: "none", label: t("editor.secondary_none") },
-            ],
+            options: SECONDARY_OPTIONS.map((value) => ({
+              value,
+              label: localize(this._hass, `editor.secondary_info_${value}`),
+            })),
           },
         },
       },
     ];
   }
 
-  _labels(schema) {
-    return localize(this._hass, EDITOR_LABEL_KEYS[schema.name] ?? schema.name);
-  }
-
   _render() {
-    if (!this._hass) return;
+    if (!this._hass || !this._config) return;
     if (!this._form) {
       this._form = document.createElement("ha-form");
-      this._form.computeLabel = (schema) => this._labels(schema);
-      this._form.addEventListener("value-changed", (ev) => {
-        const config = { type: "custom:metro-card", ...ev.detail.value };
+      this._form.computeLabel = (field) => localize(this._hass, `editor.${field.name}`);
+      this._form.addEventListener("value-changed", (event) => {
+        const config = { ...this._config, ...event.detail.value };
+        for (const [key, value] of Object.entries(config)) {
+          if (value === "" || value == null || (Array.isArray(value) && value.length === 0)) {
+            delete config[key];
+          }
+        }
+        config.type = this._config.type ?? `custom:${CARD_TYPE}`;
         this.dispatchEvent(
-          new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true })
+          new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }),
         );
       });
       this.appendChild(this._form);
@@ -414,24 +336,20 @@ class MetroCardEditor extends HTMLElement {
   }
 }
 
-// O módulo roda uma vez por URL de onde é servido, e a URL do card carrega a
-// versão da integração. Atualizar a integração sem reiniciar o Home Assistant
-// deixa a URL da versão anterior registrada ao lado da nova, então o módulo é
-// avaliado duas vezes. Sem esta guarda, a segunda execução falha no nome de tag
-// já ocupado e registra uma entrada duplicada no seletor de cards.
-if (!customElements.get("metro-card")) {
-  customElements.define("metro-card", MetroCard);
-  customElements.define("metro-card-editor", MetroCardEditor);
+// O módulo é avaliado uma vez por URL, e a URL carrega a versão da integração:
+// atualizar sem reiniciar o Home Assistant o carrega uma segunda vez.
+if (!customElements.get(CARD_TYPE)) {
+  customElements.define(CARD_TYPE, MetroCard);
+  customElements.define(EDITOR_TYPE, MetroCardEditor);
 
   window.customCards = window.customCards || [];
   window.customCards.push({
-    type: "metro-card",
+    type: CARD_TYPE,
     name: "Metrô SP Card",
     description: "Lists the Metrô SP / CPTM lines and their operation status.",
     preview: true,
     documentationURL: "https://github.com/roquerodrigo/ha-metro-sp",
   });
 
-  // eslint-disable-next-line no-console
   console.info("%c metro-card ", "background:#0455A1;color:#fff;border-radius:3px", "loaded");
 }
